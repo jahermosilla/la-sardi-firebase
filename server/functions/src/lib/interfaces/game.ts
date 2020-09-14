@@ -2,43 +2,57 @@ import { GameDirection } from "../enums/game-direction";
 import { CardColor } from "../enums/card-color";
 
 
-export declare interface IDeck extends Array<ICard> {
-  deal(
-    playerId: string,
-    numCards: number,
-    gameState: IGameState
-  ): Partial<IGameState>;
-}
+/**
+ * Structure of "game" record in "games" node
+ */
+export declare interface IGameNode {
+    owner: string,
+    properties: IGameProperties,
+    state: IGameState,
+    players: IPlayers
+};
+
+/**
+ * Strcuture of "hand" record in hands node
+ */
+export declare interface IHandNode {
+    [key: string]: Array<ICard>
+};
+
+/**
+ * Strcuture of "deck" record in decks node
+ */
+export declare interface IDeckNode {
+    [key: string]: Array<ICard>
+};
+
 
 export declare interface IGameActionOptions {
     gameId: string,
     userId: string
 }
 
-export declare interface IGame {
-    owner: string,
-    properties: IGameProperties,
-    state: IGameState,
-    players: Array<string>
+export declare interface IPlayers {
+    [key: string]: true
 };
 
 export declare interface IGameProperties {
-    isPrivate: boolean,
-    token: string,
     createdAt: number
 };
 
 export declare interface IGameState {
-    deck: IDeck,
     turn: string | null,
-    playedCard: ICard | null | undefined,
+    playedCard: ICard | null,
     direction: GameDirection,
-    acc: number,
-    hands: IPlayersHands
+    counts: {
+        cards: IPlayerCardCount,
+        acc: number,
+        deck: number
+    }
 };
 
-export declare interface IPlayersHands {
-    [key: string]: Array<ICard>
+export declare interface IPlayerCardCount {
+    [key: string]: number
 };
 
 export declare interface ICard {

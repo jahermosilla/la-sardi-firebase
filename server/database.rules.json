@@ -1,7 +1,14 @@
 {
-  /* Visit https://firebase.google.com/docs/database/security to learn more about security rules. */
   "rules": {
-    ".read": false,
-    ".write": false
+    "games": {
+      "$gameId": {
+        ".read": "data.child('players').child(auth.uid).val() === true"
+      }
+    },
+    "hands": {
+      "$userId": {
+        ".read": "$userId === auth.uid"
+      }
+    }
   }
 }

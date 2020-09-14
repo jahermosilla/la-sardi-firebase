@@ -1,37 +1,32 @@
-import { IGame } from "./interfaces/game";
+import { IGameNode } from "./interfaces/game";
 import { GameDirection } from "./enums/game-direction";
+
 import Deck from "./deck";
 
-
-
-
-export function createEmptyGameObject(
-  owner: string,
-  isPrivate: boolean
-): IGame {
-  const token = "Hello";
+export function getEmpty(owner: string, isPrivate: boolean = true) : IGameNode {
   const deck = Deck.createShuffledDeck();
   const createdAt = new Date().getTime();
-  // const playedCard = deck.pop();
 
   return {
     owner,
     properties: {
-      isPrivate,
-      token,
       createdAt,
     },
     state: {
-      deck,
       turn: null,
       playedCard: null,
-      acc: 0,
       direction: GameDirection.Clockwise,
-      hands: {
-        [owner]: []
-      },
+      counts: {
+        cards: {
+          [owner]: 0
+        },
+        acc: 0,
+        deck: deck.length
+      }
     },
 
-    players: [owner],
+    players: {
+      [owner]: true
+    },
   };
 }
