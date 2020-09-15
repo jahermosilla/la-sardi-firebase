@@ -1,6 +1,6 @@
 import { ICard } from "./interfaces/game";
 import { shuffle } from "lodash";
-import { CardColor } from "./enums/card-color";
+import { asList, CardColor } from "./enums/card-color";
 import Card from "./card";
 
 export default class Deck extends Array<ICard> {
@@ -23,7 +23,7 @@ export default class Deck extends Array<ICard> {
   // }
 
   static createShuffledDeck(): Array<ICard> {
-    const orderedDeck = CardColor.asList().reduce(
+    const orderedDeck = asList().reduce(
       (list: Array<ICard>, color) => [...list, ...this.createCardsFor(color)],
       []
     );

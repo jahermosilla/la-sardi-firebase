@@ -4,6 +4,10 @@ import * as admin from 'firebase-admin';
 import express from "express";
 import cookieParserFactory from 'cookie-parser';
 import corsFactory from 'cors';
+import helmet from 'helmet';
+import compression from 'compression';
+import createError, { HttpError } from 'http-errors';
+
 
 import gameRouter from './controllers/game';
 
@@ -18,8 +22,22 @@ const app = express();
 
 app.use(cors);
 app.use(cookieParser);
+app.use(helmet());
+app.use(compression());
 
 app.use(gameRouter);
+
+// Handle 404
+app.use((req, res, next) => {
+    next(createError(404, 'Not found'));
+});
+
+// Error handler
+app.use((
+    error: HttpError,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction) => res.status(error.status).json(error));
 
 export const server = functions.https.onRequest(app);
 

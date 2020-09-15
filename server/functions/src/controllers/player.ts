@@ -15,10 +15,16 @@ router
   .post("/player/game/:gameId/pass", canPass, pass)
   .post("/player/game/:gameId/deck/take", canTakeFromDeck, takeFromDeck);
 
-async function playCard(req: Request, res: Response, next: NextFunction) {}
+async function playCard(req: Request, res: Response, next: NextFunction) {
+  // @TODO
+}
 
-async function pass(req: Request, res: Response, next: NextFunction) {}
+async function pass(req: Request, res: Response, next: NextFunction) {
+  // @TODO
+}
 
-async function takeFromDeck(req: Request, res: Response, next: NextFunction) {}
+async function takeFromDeck(req: Request, res: Response, next: NextFunction) {
+  // @TODO
+}
 
 export default router;

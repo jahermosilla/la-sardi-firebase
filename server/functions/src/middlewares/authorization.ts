@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import * as admin from "firebase-admin";
+import createError from 'http-errors';
 
 export default async function (req: Request, res: Response, next: NextFunction) {
   if (
@@ -7,8 +8,7 @@ export default async function (req: Request, res: Response, next: NextFunction) 
       !req.headers.authorization.startsWith("Bearer ")) &&
     !(req.cookies && req.cookies.__session)
   ) {
-    res.status(403).send("Unauthorized");
-    return;
+    return next(createError(403, 'Unauthorized'));
   }
 
   let idToken;
@@ -23,18 +23,14 @@ export default async function (req: Request, res: Response, next: NextFunction) 
     idToken = req.cookies.__session;
   } else {
     // No cookie
-    res.status(403).send("Unauthorized");
-    return;
+    return next(createError(403, "Unauthorized"));
   }
 
   try {
     const decodedIdToken = await admin.auth().verifyIdToken(idToken);
     (req as any).user = decodedIdToken;
-    next();
-    return;
+    return next();
   } catch (error) {
-    console.error("Error while verifying Firebase ID token:", error);
-    res.status(403).send("Unauthorized");
-    return;
+    return next(createError(403, "Unauthorized"));
   }
 }

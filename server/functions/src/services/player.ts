@@ -28,7 +28,7 @@ export async function playCard(card: ICard, game: IGameNode, { gameId, userId }:
   const newGame  = { ...game, state: newState };
   changes.turn = getNextPlayer(newGame, turns);
 
-  updateGameState(gameId, changes);
+  await updateGameState(gameId, changes);
 }
 
 export function getNextPlayer(game: IGameNode, turns = 1) : string {
@@ -63,7 +63,7 @@ export function checkCard(card: ICard, state: IGameState) : boolean {
 }
 
 export function isCardPlayable(userCard: ICard, gameCard: ICard | null) {
-    if (gameCard == null) {
+    if (gameCard === null) {
       return true;
     }
 
