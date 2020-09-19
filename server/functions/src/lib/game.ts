@@ -2,6 +2,7 @@ import { IGameNode } from "./interfaces/game";
 import { GameDirection } from "./enums/game-direction";
 
 import Deck from "./deck";
+import { GameStatus } from "./enums/game-status";
 
 export function getEmpty(owner: string, isPrivate: boolean = true) : IGameNode {
   const deck = Deck.createShuffledDeck();
@@ -9,6 +10,7 @@ export function getEmpty(owner: string, isPrivate: boolean = true) : IGameNode {
 
   return {
     owner,
+    status: GameStatus.NOT_STARTED,
     properties: {
       createdAt,
     },

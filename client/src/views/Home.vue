@@ -1,21 +1,83 @@
 <template>
-  <button @click="loginWithGoogle">Hello</button>
+  <v-container class="fill-height" fluid :style="containerStyle">
+    <v-row align="center" justify="center">
+      <v-col cols="12">
+        <v-img :src="backgroundImage" contain max-height="45vh"></v-img>
+      </v-col>
+
+      <v-col cols="12" class="text-center text-h4">
+        LA SARDI
+      </v-col>
+
+      <v-col cols="12" md="3" class="text-center">
+        <v-btn text block dark @click="dialogs.createGame.opened = true">CREAR PARTIDA</v-btn>
+      </v-col>
+      <v-col cols="12" md="3" class="text-center">
+        <v-btn text block dark @click="dialogs.joinGame.opened = true">UNIRSE</v-btn>
+      </v-col>
+    </v-row>
+
+
+    <v-dialog
+      v-model="dialogs.createGame.opened"
+      :persistent="dialogs.createGame.persistent"
+      scrollable
+      max-width="300px"
+    >
+      <create-game @loading="(value) => dialogs.createGame.persistent = value"/>
+    </v-dialog>
+
+    <v-dialog
+      v-model="dialogs.joinGame.opened"
+      :persistent="dialogs.joinGame.persistent"
+      scrollable
+      max-width="300px"
+    >
+      <join-game @loading="(value) => dialogs.joinGame.persistent = value"/>
+    </v-dialog>
+  </v-container>
 </template>
 
 <script>
-import firebase from 'firebase';
+import CreateGame from '@/components/dialogs/CreateGame';
+import JoinGame from '@/components/dialogs/JoinGame';
+import backgroundImage from '@/assets/back.svg';
 
 export default {
   name: 'Home',
 
-  created() {
-    firebase.auth().onAuthStateChanged(user => console.log('User', user));
+  components: {
+    CreateGame,
+    JoinGame
   },
-  methods: {
-    async loginWithGoogle() {
-      const response = await firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
-      console.log(response);
+
+  data() {
+    return {
+      backgroundImage,
+      dialogs: {
+        createGame: {
+          opened: false,
+          persistent: false
+        },
+        joinGame: {
+          opened: false,
+          persistent: false
+        }
+      }
+    }
+  },
+
+  computed: {
+    containerStyle() {
+      return {
+        background: this.$vuetify.theme.themes.light.primary
+      }
     }
   }
 }
 </script>
+<style>
+  .full {
+    flex: 1 1 !important;
+  }
+</style>

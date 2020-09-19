@@ -94,6 +94,15 @@ export async function getGameByToken(token: string): Promise<firebase.database.D
     .once("value");
 }
 
+export async function getPlayerHand(gameId: string, playerId: string): Promise<Array<ICard>> {
+  return (await firebase
+    .database()
+    .ref("hands")
+    .child(gameId)
+    .child(playerId)
+    .once("value")).val();
+}
+
 export async function updateGameState(
   gameId: string,
   changes: Partial<IGameState>

@@ -1,8 +1,9 @@
+import firebase from 'firebase-admin';
 import { GameDirection } from "../lib/enums/game-direction";
 import { ICard, IGameActionOptions, IGameNode, IGameState } from "../lib/interfaces/game";
-import { updateGameState } from "./game";
+import { getDeckByGameId, getGameById, getPlayerHand, updateGameState } from "./game";
 
-export async function playCard(card: ICard, game: IGameNode, { gameId, userId }: IGameActionOptions) {
+export async function playCard(card: ICard, game: IGameNode, { gameId }: Partial<IGameActionOptions>) {
   // Update the game based on played card
   const changes: Partial<IGameState> = {};
 
@@ -28,7 +29,52 @@ export async function playCard(card: ICard, game: IGameNode, { gameId, userId }:
   const newGame  = { ...game, state: newState };
   changes.turn = getNextPlayer(newGame, turns);
 
+  await updateGameState(gameId as string, changes);
+}
+
+export async function pass({ userId, gameId }: IGameActionOptions) {
+  const game = await getGameById(gameId);
+
+  if (game.state.turn !== userId) {
+    throw new Error("Not your turn");
+  }
+
+  const changes = {
+    turn: getNextPlayer(game, 1),
+  };
+
   await updateGameState(gameId, changes);
+}
+
+export async function takeFromDeck({ userId, gameId }: IGameActionOptions) {
+  const deck = await getDeckByGameId(gameId);
+
+  if (!deck || !deck.length) {
+    return;
+  }
+
+  const game = await getGameById(gameId);
+  const hands = await getPlayerHand(gameId, userId);
+
+  if (game.state.counts.acc) {
+    let consumed = game.state.counts.acc;
+
+    while (consumed-- && deck.length) {
+      hands.push(deck.pop() as ICard);
+    }
+
+    game.state.counts.acc = 0;
+  } else {
+    hands.push(deck.pop() as ICard);
+  }
+
+  const updates = {
+    [`hands/${gameId}/${userId}`]: hands,
+    [`games/${gameId}/state/counts/acc`]: game.state.counts.acc,
+    [`games/${gameId}/state/counts/cards/${userId}`]: hands.length,
+  };
+
+  await firebase.database().ref().update(updates);
 }
 
 export function getNextPlayer(game: IGameNode, turns = 1) : string {

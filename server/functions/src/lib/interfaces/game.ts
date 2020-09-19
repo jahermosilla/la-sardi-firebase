@@ -1,5 +1,6 @@
 import { GameDirection } from "../enums/game-direction";
 import { CardColor } from "../enums/card-color";
+import { GameStatus } from "../enums/game-status";
 
 
 /**
@@ -9,6 +10,7 @@ export declare interface IGameNode {
     owner: string,
     properties: IGameProperties,
     state: IGameState,
+    status: GameStatus,
     players: IPlayers
 };
 
