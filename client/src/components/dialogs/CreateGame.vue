@@ -74,7 +74,8 @@ export default {
             this.isLoading = true;
 
             try {
-                await db.createGame();
+                const { data: { key: gameId } } = await db.createGame();
+                this.$router.push({ name: 'Game', params: { gameId } })
             } catch (error) {
                 // Do nothing
             } finally {

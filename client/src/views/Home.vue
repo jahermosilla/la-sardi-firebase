@@ -1,5 +1,15 @@
 <template>
   <v-container class="fill-height" fluid :style="containerStyle">
+    <v-app-bar app color="primary" class="elevation-0">
+      <v-btn icon>
+        <v-avatar :size="40">
+          <img :src="user.photoURL" :alt="user.displayName">
+        </v-avatar>
+      </v-btn>
+      
+      <v-toolbar-title>{{user.displayName}}</v-toolbar-title>
+    </v-app-bar>
+
     <v-row align="center" justify="center">
       <v-col cols="12">
         <v-img :src="backgroundImage" contain max-height="45vh"></v-img>
@@ -42,6 +52,7 @@
 import CreateGame from '@/components/dialogs/CreateGame';
 import JoinGame from '@/components/dialogs/JoinGame';
 import backgroundImage from '@/assets/back.svg';
+import firebase from 'firebase';
 
 export default {
   name: 'Home',
@@ -54,6 +65,7 @@ export default {
   data() {
     return {
       backgroundImage,
+      user: null,
       dialogs: {
         createGame: {
           opened: false,
@@ -65,6 +77,10 @@ export default {
         }
       }
     }
+  },
+
+  created() {
+    this.user = firebase.auth().currentUser;
   },
 
   computed: {

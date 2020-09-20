@@ -31,9 +31,7 @@ firebase
     .auth()
     .onAuthStateChanged(
         async (credentials) =>
-        (axios.defaults.headers.common[
-            "Authorization"
-        ] = `Bearer ${await credentials.getIdToken()}`)
+            (axios.defaults.headers.common["Authorization"] = `Bearer ${await credentials.getIdToken()}`)
     );
 
 export async function createGame() {
