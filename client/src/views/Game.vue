@@ -20,14 +20,13 @@
                 style="width: 100px; height: 153px; z-index: 2;"
             >
             </draggable>
-            <transition name="slide-x-reverse-transition">
                 <game-card
                     v-bind="playedCard"
                     :disabled="false"
                     no-pointer
                     style="position: absolute; top:0; left:0;"
+                    :class="{ card: animationActive }"
                 />
-            </transition>
         </div>
 
         <v-btn v-if="acc > 0">{{acc}}</v-btn>
@@ -89,6 +88,8 @@ export default {
     data() {
         return {
             gameRef: null,
+
+            animationActive: false,
 
             playedCards: [],
             userPlayedCard: null,

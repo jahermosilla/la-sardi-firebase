@@ -1,0 +1,21 @@
+import { NextFunction, Request, Response } from "express";
+import { RequestData } from "../lib/helpers";
+import { ICard } from "../lib/interfaces/game";
+
+export default async function (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const data: Map<RequestData, any> = (req as any).data;
+  const hand: Array<ICard> = data.get(RequestData.HAND);
+
+  const { card }: { card: ICard } = req.body;
+  const cardIndex = hand.findIndex(card.equals.bind(card));
+
+  if (cardIndex < 0) {
+    return next(new Error("You cant play a card you dont own"));
+  }
+
+  next();
+}

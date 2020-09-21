@@ -28,7 +28,6 @@ export declare interface IDeckNode {
     [key: string]: Array<ICard>
 };
 
-
 export declare interface IGameActionOptions {
     gameId: string,
     userId: string
@@ -39,8 +38,16 @@ export declare interface IPlayers {
 };
 
 export declare interface IGameProperties {
-    createdAt: number
+    createdAt: number,
+    isPrivate: boolean,
+    qtt: IGameQuantities
 };
+
+export declare interface IGameQuantities {
+        cards: number,
+        decks: number,
+        players: number
+    } 
 
 export declare interface IGameState {
     turn: string | null,

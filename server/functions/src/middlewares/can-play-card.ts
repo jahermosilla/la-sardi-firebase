@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import firebase from "firebase-admin";
-import { checkCard, checkTurn } from "../../services/player";
-// import firebase from "firebase-admin";
+import { checkCard, checkTurn } from "../services/player";
 
 export default async function (
   req: Request,

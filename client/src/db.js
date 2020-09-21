@@ -34,6 +34,6 @@ firebase
             (axios.defaults.headers.common["Authorization"] = `Bearer ${await credentials.getIdToken()}`)
     );
 
-export async function createGame() {
-    return axios.post('/game', {});
+export async function createGame(body) {
+    return axios.post('/game', body);
 }

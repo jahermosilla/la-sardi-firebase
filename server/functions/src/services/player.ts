@@ -1,15 +1,18 @@
 import firebase from 'firebase-admin';
 import { GameDirection } from "../lib/enums/game-direction";
 import { ICard, IGameActionOptions, IGameNode, IGameState } from "../lib/interfaces/game";
-import { getDeckByGameId, getGameById, getPlayerHand, updateGameState } from "./game";
+import { getGameById, updateGameState } from "./game";
 
-export async function playCard(card: ICard, game: IGameNode, { gameId }: Partial<IGameActionOptions>) {
+export async function playCard(card: ICard, { gameId, userId, game, hand }: { gameId: string, userId: string, game: IGameNode, hand: Array<ICard> }) {
   // Update the game based on played card
-  const changes: Partial<IGameState> = {};
+  const changes: IGameState = { ...game.state };
+
+  // TODO: Check if user has the card
+  // TODO: Update player hand
 
   changes.playedCard = card;
 
-  if (card.value === 1 || card.value === 2) {
+  if ([1, 2].indexOf(card.value) >= 0) {
     const delta = card.value === 1 ? 6 : 2;
     changes.counts = {
       ...game.state.counts,
@@ -24,12 +27,22 @@ export async function playCard(card: ICard, game: IGameNode, { gameId }: Partial
   }
 
   // Get new turn
-  const turns = card.value === 11 ? 2 : 1;
   const newState = { ...game.state, ...changes };
   const newGame  = { ...game, state: newState };
-  changes.turn = getNextPlayer(newGame, turns);
 
-  await updateGameState(gameId as string, changes);
+  if ([3, 7].indexOf(card.value) < 0) {
+    const turns = card.value === 11 ? 2 : 1;
+    changes.turn = getNextPlayer(newGame, turns);
+  }
+
+  const cardIndex: number = hand.findIndex(card.equals.bind(card));
+  const newHand = hand.splice(cardIndex, 1);
+
+  const updates = {
+    [`games/${gameId}/state`]: changes,
+    [`hands/${gameId}/${userId}`]: newHand
+  };
+  await firebase.database().ref().update(updates);
 }
 
 export async function pass({ userId, gameId }: IGameActionOptions) {
@@ -46,32 +59,37 @@ export async function pass({ userId, gameId }: IGameActionOptions) {
   await updateGameState(gameId, changes);
 }
 
-export async function takeFromDeck({ userId, gameId }: IGameActionOptions) {
-  const deck = await getDeckByGameId(gameId);
-
+export async function takeFromDeck({
+  userId,
+  gameId,
+  deck,
+  game,
+  hand
+}: IGameActionOptions & {
+  deck?: Array<ICard>;
+  game: IGameNode;
+  hand: Array<ICard>;
+}) {
   if (!deck || !deck.length) {
     return;
   }
-
-  const game = await getGameById(gameId);
-  const hands = await getPlayerHand(gameId, userId);
 
   if (game.state.counts.acc) {
     let consumed = game.state.counts.acc;
 
     while (consumed-- && deck.length) {
-      hands.push(deck.pop() as ICard);
+      hand.push(deck.pop() as ICard);
     }
 
     game.state.counts.acc = 0;
   } else {
-    hands.push(deck.pop() as ICard);
+    hand.push(deck.pop() as ICard);
   }
 
   const updates = {
-    [`hands/${gameId}/${userId}`]: hands,
+    [`hands/${gameId}/${userId}`]: hand,
     [`games/${gameId}/state/counts/acc`]: game.state.counts.acc,
-    [`games/${gameId}/state/counts/cards/${userId}`]: hands.length,
+    [`games/${gameId}/state/counts/cards/${userId}`]: hand.length,
   };
 
   await firebase.database().ref().update(updates);

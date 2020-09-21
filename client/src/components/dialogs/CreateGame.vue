@@ -74,7 +74,14 @@ export default {
             this.isLoading = true;
 
             try {
-                const { data: { key: gameId } } = await db.createGame();
+                const isPrivate = this.isPrivate;
+                const qtt = {
+                  cards: this.dealedCardsQtt,
+                  decks: this.decksQtt,
+                  players: this.playersQtt
+                };
+
+                const { data: { key: gameId } } = await db.createGame({ isPrivate, qtt });
                 this.$router.push({ name: 'Game', params: { gameId } })
             } catch (error) {
                 // Do nothing

@@ -1,10 +1,18 @@
-import { IGameNode } from "./interfaces/game";
+import { IGameNode, IGameQuantities } from "./interfaces/game";
 import { GameDirection } from "./enums/game-direction";
 
 import Deck from "./deck";
 import { GameStatus } from "./enums/game-status";
 
-export function getEmpty(owner: string, isPrivate: boolean = true) : IGameNode {
+export function getEmpty({
+  owner,
+  isPrivate = true,
+  qtt
+} : {
+  owner: string,
+  isPrivate: boolean,
+  qtt: IGameQuantities
+}) : IGameNode {
   const deck = Deck.createShuffledDeck();
   const createdAt = new Date().getTime();
 
@@ -13,6 +21,8 @@ export function getEmpty(owner: string, isPrivate: boolean = true) : IGameNode {
     status: GameStatus.NOT_STARTED,
     properties: {
       createdAt,
+      isPrivate,
+      qtt
     },
     state: {
       turn: null,

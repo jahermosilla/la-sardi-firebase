@@ -1,20 +1,31 @@
 import * as firebase from 'firebase-admin';
 import { getEmpty } from '../lib/game';
-import { ICard, IGameNode, IGameState, IHandNode } from '../lib/interfaces/game';
+import { ICard, IGameNode, IGameQuantities, IGameState, IHandNode } from '../lib/interfaces/game';
 import Deck from '../lib/deck';
+import { GameStatus } from '../lib/enums/game-status';
 
-export async function create(owner: string, isPrivate: boolean) : Promise<string> {
+export async function create({
+  owner,
+  isPrivate = true,
+  qtt,
+}: {
+  owner: string;
+  isPrivate: boolean;
+  qtt: IGameQuantities;
+}): Promise<string> {
   const deck = Deck.createShuffledDeck();
-  const game = getEmpty(owner, isPrivate);
+  const game = getEmpty({ owner, isPrivate, qtt });
 
-  const gameKey = `games/${(await firebase.database().ref('games').push()).key}`;
+  const gameKey = `games/${
+    (await firebase.database().ref("games").push()).key
+  }`;
   const deckKey = `decks/${gameKey}`;
   const userKey = `users/${owner}/game`;
 
   const updates = {
     [gameKey]: game,
     [deckKey]: deck,
-    [userKey]: gameKey
+    [userKey]: gameKey,
   };
 
   await firebase.database().ref().update(updates);
@@ -22,25 +33,20 @@ export async function create(owner: string, isPrivate: boolean) : Promise<string
   return gameKey;
 }
 
-export async function start(gameId: string) {
-  const numCards = 3;
-  const game = await getGameById(gameId);
-
-  if (Object.keys(game.players).length < 2) {
-    throw new Error('At least two players');
-  }
-
-  const deck = await getDeckByGameId(gameId);
+export async function start(gameId: string, { game, deck }: { game: IGameNode, deck: Array<ICard> }) {
+  const numCards = game.properties.qtt.cards;
+  const playerKeys = Object.keys(game.players) || [];
+  const numPlayers = playerKeys.length;
+  const randomIndex = Math.floor(Math.random() * numPlayers) + 1;
   const hands: IHandNode = {};
 
   game.state.playedCard = deck.pop() as ICard;
+  game.status = GameStatus.PLAYING;
+  game.state.turn = playerKeys[randomIndex];
 
   for (let i = 0; i < numCards; i++) {
     for (const playerId of Object.keys(game.players)) {
-      hands[playerId] = [
-        ...(hands[playerId] || []),
-        deck.pop() as ICard,
-      ];
+      hands[playerId] = [...(hands[playerId] || []), deck.pop() as ICard];
     }
   }
 
@@ -51,8 +57,8 @@ export async function start(gameId: string) {
   const updates = {
     [gameKey]: game,
     [deckKey]: deck,
-    [handsKey]: hands
-  }
+    [handsKey]: hands,
+  };
 
   await firebase.database().ref().update(updates);
 }
@@ -94,15 +100,6 @@ export async function getGameByToken(token: string): Promise<firebase.database.D
     .once("value");
 }
 
-export async function getPlayerHand(gameId: string, playerId: string): Promise<Array<ICard>> {
-  return (await firebase
-    .database()
-    .ref("hands")
-    .child(gameId)
-    .child(playerId)
-    .once("value")).val();
-}
-
 export async function updateGameState(
   gameId: string,
   changes: Partial<IGameState>
@@ -118,10 +115,4 @@ export async function updateGameState(
     console.error(e);
     // Do nothing
   }
-}
-
-export async function getDeckByGameId(gameId: string): Promise<Array<ICard>> {
-  return (
-    await firebase.database().ref("decks").child(gameId).once("value")
-  ).val();
 }

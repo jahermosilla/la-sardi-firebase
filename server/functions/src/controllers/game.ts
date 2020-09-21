@@ -1,10 +1,16 @@
-import authorizationMiddleware from "../middlewares/authorization";
-import { NextFunction, Request, Response, Router } from "express";
 import * as service from '../services/game';
-import canCreate from "../middlewares/game/can-create-game";
-import canStart from '../middlewares/game/can-start-game';
-import canJoin from "../middlewares/game/can-join-game";
+
 import firebase from "firebase-admin";
+
+import authorizationMiddleware from "../middlewares/authorization";
+import checkIfOwner from '../middlewares/check-if-owner';
+import checkIfPlaying from '../middlewares/check-if-playing';
+import checkGameStatus from "../middlewares/check-game-status";
+import checkPlayersNumber from "../middlewares/check-players-number";
+
+import setRequestData, { RequestData } from "../lib/helpers";
+import { ICard, IGameNode } from "../lib/interfaces/game";
+import { NextFunction, Request, Response, Router } from "express";
 
 
 const router = Router();
@@ -12,19 +18,35 @@ const router = Router();
 router.use(authorizationMiddleware);
 
 router
-  .post("/game", canCreate, create)
-  .post("/game/:gameId/join", canJoin, join)
-  .post("/game/:gameId/start", canStart, start);
+  .post("/game",
+    setRequestData(RequestData.PLAYERGAME),
+    checkIfPlaying,
+    create
+  )
+  .post("/game/:gameId/join",
+    setRequestData(RequestData.PLAYERGAME),
+    checkIfPlaying,
+    setRequestData(RequestData.GAMESTATUS),
+    checkGameStatus,
+    join
+  )
+  .post("/game/:gameId/start",
+    setRequestData(RequestData.GAME),
+    checkIfOwner,
+    checkPlayersNumber,
+    setRequestData(RequestData.DECK),
+    start
+  );
 
 
 async function create(req: Request, res: Response, next: NextFunction) {
   try {
     const owner = ((req as any).user as firebase.auth.DecodedIdToken).uid;
-    const { isPrivate } = req.body;
+    const { isPrivate, qtt } = req.body;
 
     console.log('[USER ID]: ', owner);
 
-    const key = await service.create(owner, isPrivate);
+    const key = await service.create({ owner, isPrivate, qtt });
 
     res.json({ key });
   } catch (error) {
@@ -47,8 +69,12 @@ async function join(req: Request, res: Response, next: NextFunction) {
 
 async function start(req: Request, res: Response, next: NextFunction) {
   try {
-    const { gameId } = req.body;  
-    await service.start(gameId);  
+    const data: Map<RequestData, any> = (req as any).data;
+    const game: IGameNode = data.get(RequestData.GAME);
+    const deck: Array<ICard> = data.get(RequestData.DECK);
+    const { gameId } = req.params;
+
+    await service.start(gameId, { game, deck });
   } catch (error) {
     next(error);  
   }
