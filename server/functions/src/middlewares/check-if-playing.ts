@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { RequestData } from "../lib/helpers";
+import createError from "http-errors";
 
 export default async function (
   req: Request,
@@ -10,7 +11,7 @@ export default async function (
   const isPlaying: boolean = !!data.get(RequestData.PLAYERGAME);
 
   if (isPlaying) {
-    return next(new Error("You cant create game if youre yet playing"));
+    return next(createError(400, "You cant create game if youre yet playing"));
   }
 
   next();

@@ -1,5 +1,7 @@
 <template>
-  <div :style="style" @dragstart="dragStart" @dragend="dragEnd"></div>
+  <div @resize="onResize" :style="style" @dragstart="dragStart" @dragend="dragEnd">
+    <slot />
+  </div>
 </template>
 
 <script>
@@ -7,9 +9,6 @@ import deckPath from '@/assets/deck.png';
 
 const CARD_WIDTH = 208;
 const CARD_HEIGHT = 319;
-
-const TARGET_WIDTH = 100;
-const TARGET_HEIGHT = TARGET_WIDTH * CARD_HEIGHT / CARD_WIDTH;
 
 
 export default {
@@ -49,12 +48,21 @@ export default {
 
         dragEnd() {
             this.opacity = 1;
+        },
+
+        onResize() {
+            this.targetWidth = (window.innerHeight * 0.20) * CARD_WIDTH / CARD_HEIGHT;
+            this.targetHeight = window.innerHeight * 0.20;
+
+            console.log(window.innerHeight)
         }
     },
 
     data() {
         return {
             opacity: 1,
+            targetWidth: (window.innerHeight * 0.20) * CARD_WIDTH / CARD_HEIGHT,
+            targetHeight: window.innerHeight * 0.20
         }
     },
 
@@ -64,19 +72,19 @@ export default {
             const dx = this.val - 1;
             const dy = ['OROS', 'COPAS', 'ESPADAS', 'BASTOS', 'NONE'].reverse().indexOf(this.color);
 
-            const w = (TARGET_WIDTH * 12) - (TARGET_WIDTH * dx);
-            const h = (TARGET_HEIGHT * dy) + TARGET_HEIGHT;
+            const w = (this.targetWidth * 12) - (this.targetWidth * dx);
+            const h = (this.targetHeight * dy) + this.targetHeight;
 
             return `${w}px ${h}px`;
         },
 
         style() {
             return {
-                width: `${TARGET_WIDTH}px`,
-                height: `${TARGET_HEIGHT}px`,
+                width: `${this.targetWidth}px`,
+                height: `${this.targetHeight}px`,
                 background: `url('${deckPath}') 0px 0px`,
                 backgroundPosition: this.position,
-                backgroundSize: `${TARGET_WIDTH * 12}px ${TARGET_HEIGHT * 5}px`,
+                backgroundSize: `${this.targetWidth * 12}px ${this.targetHeight * 5}px`,
                 //transform: 'scale(0.5)',
                 //position: 'absolute',
                 cursor: this.disabled || this.noPointer ? 'auto' : 'pointer',

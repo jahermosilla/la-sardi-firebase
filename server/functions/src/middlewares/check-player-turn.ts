@@ -2,6 +2,7 @@ import firebase from 'firebase-admin';
 import { NextFunction, Request, Response } from "express";
 import { RequestData } from "../lib/helpers";
 import { IGameNode } from "../lib/interfaces/game";
+import createError from "http-errors";
 
 export default async function (
   req: Request,
@@ -12,8 +13,8 @@ export default async function (
   const game: IGameNode = data.get(RequestData.GAME);
   const userId = ((req as any).user as firebase.auth.DecodedIdToken).uid;
 
-  if (game.owner !== userId) {
-    return next(new Error("Not your turn"));
+  if (game.state.turn !== userId) {
+    return next(createError(400, "Not your turn"));
   }
 
   next();

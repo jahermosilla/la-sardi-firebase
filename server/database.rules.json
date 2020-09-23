@@ -6,8 +6,10 @@
       }
     },
     "hands": {
-      "$userId": {
-        ".read": "$userId === auth.uid"
+      "$gameId": {
+        "$userId": {
+          ".read": "$userId === auth.uid"
+        }
       }
     }
   }

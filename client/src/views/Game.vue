@@ -1,54 +1,25 @@
 <template>
-  <v-container fluid class="fill-height d-flex flex-column" :style="containerStyle">
-    <!-- Enemies -->
-    <div class="game-row d-flex justify-space-around">
-        <enemy v-for="enemy in enemies" :key="enemy.uid" v-bind="enemy"/>
-    </div>
+  <v-container fluid class="py-0 fill-height d-flex flex-column" :style="containerStyle">
+    <enemies :enemies="enemies" />
 
     <!-- Tablero -->
-    <div class="game-row d-flex flex-grow-1 flex-row justify-space-around align-center">
-        <div>
-            <game-card :val="2" color="NONE" style="cursor: pointer;"></game-card>
-        </div>
-
-        <div style="position: relative;">
-            <draggable
-                :list="playedCards"
-                group="cards"
-                handle="fake"
-                @change="onCardPlayed"
-                style="width: 100px; height: 153px; z-index: 2;"
-            >
-            </draggable>
-                <game-card
-                    v-bind="playedCard"
-                    :disabled="false"
-                    no-pointer
-                    style="position: absolute; top:0; left:0;"
-                    :class="{ card: animationActive }"
-                />
-        </div>
-
-        <v-btn v-if="acc > 0">{{acc}}</v-btn>
-        <div v-else></div>
-    </div>
+    <game-table :gameRef="gameRef" />
 
     <!-- Player -->
-    <div class="game-row d-flex flex-row justify-space-between">
+    <div class="pt-2 game-row d-flex flex-row justify-space-between">
         <div class="actions">
-            DKDSHKHS
+            <v-btn icon></v-btn>
         </div>
         <div style="overflow-x: scroll; overflow-y: hidden; white-space: nowrap; max-width: 80vw;">
             <draggable
-                :list="playerCards"
+                :list="handRef"
                 group="cards"
-                :sort="false"
                 ghost-class="chosen"
                 handle=".handle"
             >
                 <game-card
-                    v-for="(card, i) in playerCards"
-                    :key="i" v-bind="card"
+                    v-for="(card, i) in (handRef || [])"
+                    :key="`${card._value}${card._color}-${i}`" :color="card._color" :val="card._value"
                     class="mx-1"
                     style="display: inline-block;"
                     :disabled="!myTurn || !isCardPlayable(card)"
@@ -58,7 +29,12 @@
         </div>
 
         <div class="actions">
-            DKDSHKHS
+            <v-btn icon @click="startGame">
+                <v-icon style="font-size: 1.9rem;">send</v-icon>
+            </v-btn>
+            <v-btn icon @click="pass">
+                <v-icon style="font-size: 2.5rem;">{{directionIcon}}</v-icon>
+            </v-btn>
         </div>
     </div>
       
@@ -66,10 +42,12 @@
 </template>
 
 <script>
-import Enemy from '@/components/game/enemy';
+import GameTable from '@/components/game/table';
+import Enemies from '@/components/game/enemies';
 import GameCard from '@/components/game/card';
 import Draggable from 'vuedraggable';
 import firebase from 'firebase';
+import * as db from '@/db';
 
 export default {
     props: {
@@ -80,18 +58,23 @@ export default {
     },
 
     components: {
-        Enemy,
+        GameTable,
+        Enemies,
         GameCard,
         Draggable
+    },
+
+    created() {
+        this.playerId = firebase.auth().currentUser.uid;
     },
 
     data() {
         return {
             gameRef: null,
+            handRef: [],
 
-            animationActive: false,
+            playerId: null,
 
-            playedCards: [],
             userPlayedCard: null,
 
             playerCards: Array.from({ length: 12 }).map((v, i) => ({ color: 'ESPADAS', val: i + 1 }))
@@ -99,16 +82,17 @@ export default {
     },
 
     methods: {
-        onCardPlayed({ added: { element } }) {
-            this.userPlayedCard = element;
+        async startGame() {
+            await db.startGame(this.gameRef['.key']);
+        },
 
-            // TODO: Handle play card
+        async pass() {
+            await db.pass(this.gameRef['.key']);
         },
 
         isCardPlayable(card) {
             const playedCard = this.translateCard(this.gameRef.state.playedCard);
             const acc = this.gameRef.state.counts.acc;
-            console.log(playedCard, card);
 
             if (acc > 0) {
                 return playedCard.val === card.val;
@@ -134,12 +118,34 @@ export default {
     },
 
     firebase() {
+        const playerId = firebase.auth().currentUser.uid;
         return {
-            gameRef: firebase.database().ref(this.gameId)
+            gameRef: firebase.database().ref(this.gameId),
+            handRef: firebase.database().ref(`hands/${this.gameId.replace('games/', '')}/${playerId}`)
         }
     },
 
     computed: {
+        directionIcon() {
+            return this.direction === 0 ? 'switch_right' : 'switch_left';
+        },
+
+        direction() {
+            if (!this.gameRef) {
+                return 0;
+            }
+
+            return this.gameRef.state.direction;
+        },
+
+        imOwner() {
+            if (!this.gameRef) {
+                return false;
+            }
+
+            return this.playerId === this.gameRef.owner;
+        },
+
         myTurn() {
             if (!this.gameRef) {
                 return false;
@@ -148,27 +154,10 @@ export default {
             return this.gameRef.state.turn === firebase.auth().currentUser.uid;
         },
 
-        playedCard() {
-            const defaultCard = { color: 'NONE', val: 1 };
-            return this.userPlayedCard || this.translateCard(this.gameRef.state.playedCard) || defaultCard;
-        },
-
         containerStyle() {
             return {
                 background: this.$vuetify.theme.themes.light.primary
             }
-        },
-
-        acc() {
-            if (!this.gameRef) {
-                return 0;
-            }
-
-            return this.gameRef.state.counts.acc;
-        },
-
-        deckSize() {
-            return this.gameRef.state.counts.deck;
         },
 
         enemies() {
@@ -193,11 +182,36 @@ export default {
 </script>
 
 <style>
+    /* *::-webkit-scrollbar {
+      display: none;
+    } */
+
+    *::-webkit-scrollbar {
+        width: 0px;
+    }
+    
+    /* *::-webkit-scrollbar-track {
+        box-shadow: inset 0 0 6px rgba(27,94,32,0); 
+        border-radius: 10px;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        border-radius: 10px;
+        box-shadow: inset 0 0 6px rgba(27,94,32);
+    } */
+
     .game-row {
         width: 100%;
     }
 
     .chosen {
         background: red !important;
+    }
+
+    .actions {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        align-content: center;
     }
 </style>

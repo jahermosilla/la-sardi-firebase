@@ -2,12 +2,14 @@ import firebase from 'firebase-admin';
 import { GameDirection } from "../lib/enums/game-direction";
 import { ICard, IGameActionOptions, IGameNode, IGameState } from "../lib/interfaces/game";
 import { getGameById, updateGameState } from "./game";
+import createError from "http-errors";
+import transformInstance from '../lib/helpers/transform-instance';
+import Card from '../lib/card';
 
 export async function playCard(card: ICard, { gameId, userId, game, hand }: { gameId: string, userId: string, game: IGameNode, hand: Array<ICard> }) {
   // Update the game based on played card
   const changes: IGameState = { ...game.state };
 
-  // TODO: Check if user has the card
   // TODO: Update player hand
 
   changes.playedCard = card;
@@ -35,13 +37,17 @@ export async function playCard(card: ICard, { gameId, userId, game, hand }: { ga
     changes.turn = getNextPlayer(newGame, turns);
   }
 
-  const cardIndex: number = hand.findIndex(card.equals.bind(card));
-  const newHand = hand.splice(cardIndex, 1);
+  const cardIndex: number = hand
+    .map(c => transformInstance(c, new Card))
+    .findIndex(card.equals.bind(card));
+
+  hand.splice(cardIndex, 1);
 
   const updates = {
     [`games/${gameId}/state`]: changes,
-    [`hands/${gameId}/${userId}`]: newHand
+    [`hands/${gameId}/${userId}`]: hand
   };
+  
   await firebase.database().ref().update(updates);
 }
 
@@ -49,7 +55,7 @@ export async function pass({ userId, gameId }: IGameActionOptions) {
   const game = await getGameById(gameId);
 
   if (game.state.turn !== userId) {
-    throw new Error("Not your turn");
+    throw createError(400, "Not your turn");
   }
 
   const changes = {
@@ -118,12 +124,14 @@ export function getNextPlayer(game: IGameNode, turns = 1) : string {
 
 export function checkCard(card: ICard, state: IGameState) : boolean {
     const { playedCard, counts: { acc } } = state;
+    const c = transformInstance(card, new Card);
+    const pc = transformInstance(playedCard as object, new Card);
     
     if (acc > 0) {
-        return card.value === (playedCard || {}).value;
+        return c.value === (pc || {}).value;
     }
 
-    return isCardPlayable(card, playedCard);
+    return isCardPlayable(c, pc);
 }
 
 export function isCardPlayable(userCard: ICard, gameCard: ICard | null) {

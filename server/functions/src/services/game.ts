@@ -16,16 +16,16 @@ export async function create({
   const deck = Deck.createShuffledDeck();
   const game = getEmpty({ owner, isPrivate, qtt });
 
-  const gameKey = `games/${
-    (await firebase.database().ref("games").push()).key
-  }`;
-  const deckKey = `decks/${gameKey}`;
+  const key = (await firebase.database().ref("games").push()).key;
+
+  const gameKey = `games/${key}`;
+  const deckKey = `decks/${key}`;
   const userKey = `users/${owner}/game`;
 
   const updates = {
     [gameKey]: game,
     [deckKey]: deck,
-    [userKey]: gameKey,
+    [userKey]: key,
   };
 
   await firebase.database().ref().update(updates);
@@ -37,7 +37,7 @@ export async function start(gameId: string, { game, deck }: { game: IGameNode, d
   const numCards = game.properties.qtt.cards;
   const playerKeys = Object.keys(game.players) || [];
   const numPlayers = playerKeys.length;
-  const randomIndex = Math.floor(Math.random() * numPlayers) + 1;
+  const randomIndex = Math.floor(Math.random() * numPlayers);
   const hands: IHandNode = {};
 
   game.state.playedCard = deck.pop() as ICard;
@@ -50,6 +50,10 @@ export async function start(gameId: string, { game, deck }: { game: IGameNode, d
     }
   }
 
+  for (const playerId of Object.keys(game.players)) {
+    game.state.counts.cards[playerId] = hands[playerId].length;
+  }
+
   const gameKey = `games/${gameId}`;
   const deckKey = `decks/${gameId}`;
   const handsKey = `hands/${gameId}`;
@@ -59,6 +63,8 @@ export async function start(gameId: string, { game, deck }: { game: IGameNode, d
     [deckKey]: deck,
     [handsKey]: hands,
   };
+
+  console.log(updates);
 
   await firebase.database().ref().update(updates);
 }

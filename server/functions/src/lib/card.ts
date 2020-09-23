@@ -2,13 +2,18 @@ import { CardColor } from "./enums/card-color";
 import { ICard } from "./interfaces/game";
 
 export default class Card implements ICard {
-    private _color: CardColor;
+    private _color!: CardColor;
 
-    private _value: number;
+    private _value!: number;
 
-    constructor(value: number, color: CardColor) {
-        this._color = color;
-        this._value = value;
+    constructor() {}
+
+    static from(value: number, color: CardColor) {
+        const card = new Card();
+        card.color = color;
+        card.value = value;
+
+        return card;
     }
 
     get color() {

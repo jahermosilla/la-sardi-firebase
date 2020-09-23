@@ -1,21 +1,26 @@
 import { NextFunction, Request, Response } from "express";
 import firebase from "firebase-admin";
 import { checkCard, checkTurn } from "../services/player";
+import createError from 'http-errors';
+import { RequestData } from "../lib/helpers";
+import { IGameNode } from "../lib/interfaces/game";
 
 export default async function (
   req: Request,
   res: Response,
   next: NextFunction
 ) {
+  const { body: { card } } = req as any;
   const userId = ((req as any).user as firebase.auth.DecodedIdToken).uid;
-  const { game, body: { card } } = req as any;
-
+  const data: Map<RequestData, any> = (req as any).data;
+  const game: IGameNode = data.get(RequestData.GAME);
+  
   if (!checkTurn(userId, game.state)) {
-    next(new Error("Is not your turn"));
+    next(createError(400, "Is not your turn"));
   }
 
   if (!checkCard(card, game.state)) {
-    next(new Error("Card is not playable"));
+    next(createError(400, "Card is not playable"));
   }
 
   next();

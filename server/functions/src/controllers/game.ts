@@ -76,6 +76,7 @@ async function start(req: Request, res: Response, next: NextFunction) {
 
     await service.start(gameId, { game, deck });
   } catch (error) {
+    console.error(error);
     next(error);  
   }
 }

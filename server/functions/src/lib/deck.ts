@@ -17,7 +17,7 @@ export default class Deck extends Array<ICard> {
     const length = 12;
 
     return Array.from({ length }).map(
-      (_, value: number) => new Card(value + 1, color)
+      (_, value: number) => Card.from(value + 1, color)
     );
   }
 }

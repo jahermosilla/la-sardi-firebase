@@ -8,7 +8,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import createError, { HttpError } from 'http-errors';
 
-
+import playerRouter from './controllers/player';
 import gameRouter from './controllers/game';
 
 // import { IGameActionOptions, IGame, ICard, IGameState } from './lib/interfaces/game';
@@ -26,6 +26,7 @@ app.use(helmet());
 app.use(compression());
 
 app.use(gameRouter);
+app.use(playerRouter);
 
 // Handle 404
 app.use((req, res, next) => {
@@ -37,7 +38,7 @@ app.use((
     error: HttpError,
     req: express.Request,
     res: express.Response,
-    next: express.NextFunction) => res.status(error.status).json(error));
+    next: express.NextFunction) => res.status(error.status || 500).json(error));
 
 export const server = functions.https.onRequest(app);
 

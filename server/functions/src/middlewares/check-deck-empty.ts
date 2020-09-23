@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { RequestData } from "../lib/helpers";
 import { ICard } from "../lib/interfaces/game";
+import createError from "http-errors";
 
 export default (shouldBeEmpty: boolean) => async function (
   req: Request,
@@ -11,11 +12,11 @@ export default (shouldBeEmpty: boolean) => async function (
   const deck: Array<ICard> = data.get(RequestData.DECK) || [];
 
   if (shouldBeEmpty && deck.length > 0) {
-    return next(new Error('Deck is not empty'));
+    return next(createError(400, 'Deck is not empty'));
   }
 
   if (!shouldBeEmpty && deck.length === 0) {
-    return next(new Error("Deck is empty"));
+    return next(createError(400, "Deck is empty"));
   }
 
   next();

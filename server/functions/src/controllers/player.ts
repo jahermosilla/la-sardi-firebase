@@ -11,6 +11,8 @@ import * as service from '../services/player';
 import { NextFunction, Request, Response, Router } from "express";
 import { ICard, IGameNode } from "../lib/interfaces/game";
 import setRequestData, { RequestData } from "../lib/helpers";
+import transformInstance from '../lib/helpers/transform-instance';
+import Card from '../lib/card';
 
 const router = Router();
 
@@ -18,6 +20,7 @@ router
   .use(authorizationMiddleware)
   .post(
     "/player/game/:gameId/card/play",
+    transformCard,
     setRequestData(RequestData.HAND),
     checkCardInHand,
     setRequestData(RequestData.GAME),
@@ -84,6 +87,11 @@ async function takeFromDeck(req: Request, res: Response, next: NextFunction) {
   } catch (error) {
     next(error);
   }
+}
+
+function transformCard(req: Request, res: Response, next: NextFunction) {
+  req.body.card = transformInstance(req.body.card, new Card);
+  next();
 }
 
 export default router;

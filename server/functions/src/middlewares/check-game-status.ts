@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { GameStatus } from "../lib/enums/game-status";
 import { RequestData } from "../lib/helpers";
+import createError from "http-errors";
 
 export default async function (
   req: Request,
@@ -12,7 +13,7 @@ export default async function (
 
   if (status !== GameStatus.NOT_STARTED) {
     return next(
-      new Error("You cant join a game whose status is playing or finished")
+      createError(400, "You cant join a game whose status is playing or finished")
     );
   }
 

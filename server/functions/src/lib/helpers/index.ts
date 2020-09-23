@@ -10,10 +10,11 @@ export default function setRequestData(
             const userId = ((req as any).user as firebase.auth.DecodedIdToken).uid;
             const actions = { ...req.body, ...req.params, userId };
             const data = await getData(actions, ...types);
-            (req as any).data = data;
+            (req as any).data = new Map([ ...((req as any).data || []), ...data ]);
     
             next();
         } catch (error) {
+            console.error(error);
             next(error);
         }
     }

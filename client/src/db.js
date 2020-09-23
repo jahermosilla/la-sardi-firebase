@@ -21,8 +21,9 @@ export const db = firebase
 // const { Timestamp, GeoPoint } = firebase.firestore
 // export { Timestamp, GeoPoint }
 
-export const SERVER_URL =
-    "https://us-central1-la-sardi-acd1a.cloudfunctions.net/server";
+// export const SERVER_URL =
+//     "https://us-central1-la-sardi-acd1a.cloudfunctions.net/server";
+export const SERVER_URL = "http://localhost:5001/la-sardi-acd1a/us-central1/server";
 
 axios.defaults.baseURL = SERVER_URL;
 
@@ -36,4 +37,16 @@ firebase
 
 export async function createGame(body) {
     return axios.post('/game', body);
+}
+
+export async function playCard(card, gameId) {
+    return axios.post(`/player/game/${gameId}/card/play`, { card });
+}
+
+export async function pass(gameId) {
+    return axios.post(`/player/game/${gameId}/pass`);
+}
+
+export async function startGame( gameId) {
+    return axios.post(`/game/${gameId}/start`);
 }
