@@ -10,17 +10,42 @@
 
 <script>
 import Enemy from '@/components/game/enemy';
+import firebase from 'firebase';
 
 export default {
     props: {
-        enemies: {
-            type: Array,
+        gameRef: {
             required: true
         }
     },
 
     components: {
         Enemy
+    },
+
+    methods: {
+        mapEnemy(uid) {
+            return {
+                uid,
+                turn: this.gameRef.state.turn === uid,
+                cards: this.gameRef.state.counts.cards[uid] || 0
+            }
+        }
+    },
+
+    computed: {
+        enemies() {
+            if (!this.gameRef) {
+                return [];
+            }
+
+            const playerId = firebase.auth().currentUser.uid;
+
+            return Object
+                .keys(this.gameRef.players)
+                .filter(pid => pid !== playerId)
+                .map(this.mapEnemy);
+        }
     }
 }
 </script>

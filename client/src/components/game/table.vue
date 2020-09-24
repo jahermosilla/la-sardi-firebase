@@ -2,7 +2,7 @@
     <div style="background: rgba(0, 0, 0, 0.25)" class="elevation-4 rounded game-row d-flex flex-grow-1 flex-row justify-space-around align-center">
         <div style="position: relative;" class="deck-deal">
             <game-card :val="2" color="NONE" style="cursor: pointer; position: relative;" />
-            <div class="white--text headline" style="pointer-events: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%)">{{deckSize}}</div>
+            <div class="white--text headline deck-size--text">{{deckSize}}</div>
         </div>
 
         <div style="position: relative;">
@@ -110,6 +110,15 @@ export default {
     animation-duration: 0.5s;
     animation-iteration-count: infinite;
     animation-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.deck-size--text {
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    user-select: none;
 }
 
 @keyframes boing-animation {

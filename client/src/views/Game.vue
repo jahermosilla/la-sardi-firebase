@@ -1,42 +1,22 @@
 <template>
   <v-container fluid class="py-0 fill-height d-flex flex-column" :style="containerStyle">
-    <enemies :enemies="enemies" />
+    <!-- Animated Card -->
+    <transition @after-enter="animatedCard = null" name="move-card">
+        <game-card v-if="!!animatedCard" v-bind="animatedCard" class="animated-card"></game-card>
+    </transition>
 
-    <!-- Tablero -->
-    <game-table :gameRef="gameRef" />
+    <!-- Enemies -->
+    <enemies :game-ref="gameRef" ref="enemies" />
+
+    <!-- Table -->
+    <game-table :game-ref="gameRef" ref="gameTable" />
 
     <!-- Player -->
-    <div class="pt-2 game-row d-flex flex-row justify-space-between">
-        <div class="actions">
-            <v-btn icon></v-btn>
-        </div>
-        <div style="overflow-x: scroll; overflow-y: hidden; white-space: nowrap; max-width: 80vw;">
-            <draggable
-                :list="handRef"
-                group="cards"
-                ghost-class="chosen"
-                handle=".handle"
-            >
-                <game-card
-                    v-for="(card, i) in (handRef || [])"
-                    :key="`${card._value}${card._color}-${i}`" :color="card._color" :val="card._value"
-                    class="mx-1"
-                    style="display: inline-block;"
-                    :disabled="!myTurn || !isCardPlayable(card)"
-                    :class="{ handle: myTurn && isCardPlayable(card) }"
-                />
-            </draggable>
-        </div>
-
-        <div class="actions">
-            <v-btn icon @click="startGame">
-                <v-icon style="font-size: 1.9rem;">send</v-icon>
-            </v-btn>
-            <v-btn icon @click="pass">
-                <v-icon style="font-size: 2.5rem;">{{directionIcon}}</v-icon>
-            </v-btn>
-        </div>
-    </div>
+    <player :game-id="gameId" :game-ref="gameRef">
+        <template #player-actions="props">
+            <player-actions v-bind="props" :direction="direction" />
+        </template>
+    </player>
       
   </v-container>
 </template>
@@ -45,9 +25,10 @@
 import GameTable from '@/components/game/table';
 import Enemies from '@/components/game/enemies';
 import GameCard from '@/components/game/card';
-import Draggable from 'vuedraggable';
+import Player from '@/components/game/player';
+import PlayerActions from '@/components/game/player-actions';
+
 import firebase from 'firebase';
-import * as db from '@/db';
 
 export default {
     props: {
@@ -61,73 +42,82 @@ export default {
         GameTable,
         Enemies,
         GameCard,
-        Draggable
-    },
-
-    created() {
-        this.playerId = firebase.auth().currentUser.uid;
+        Player,
+        PlayerActions
     },
 
     data() {
         return {
             gameRef: null,
             handRef: [],
-
-            playerId: null,
-
-            userPlayedCard: null,
-
-            playerCards: Array.from({ length: 12 }).map((v, i) => ({ color: 'ESPADAS', val: i + 1 }))
+            animatedCard: null
         }
     },
 
+    mounted() {
+        setInterval(() => {
+            const card = {
+                color: 'NONE',
+                val: 2
+            }
+
+            this.drawCardFromDeckToPlayer(card, 2)
+        }, 500);
+    },
+
     methods: {
-        async startGame() {
-            await db.startGame(this.gameRef['.key']);
-        },
-
-        async pass() {
-            await db.pass(this.gameRef['.key']);
-        },
-
-        isCardPlayable(card) {
-            const playedCard = this.translateCard(this.gameRef.state.playedCard);
-            const acc = this.gameRef.state.counts.acc;
-
-            if (acc > 0) {
-                return playedCard.val === card.val;
-            }
-
-            if (card.val === 10) {
-                return true;
-            }
-
-            if (playedCard.val === 10) {
-                return playedCard.color === card.color || card.val === 10;
-            }
-
-            return playedCard.val === card.val || playedCard.color === card.color;
-        },
-
         translateCard(card) {
             return {
                 ...card,
                 val: card.value
             }
-        }
+        },
+
+        animateCard(card, from, to) {
+            const startX = from.getBoundingClientRect().left;
+            const startY = from.getBoundingClientRect().top;
+
+            const endX = to.getBoundingClientRect().left;
+            const endY = to.getBoundingClientRect().top;
+
+            const dx = endX - startX;
+            const dy = endY - startY;
+
+            document.documentElement.style.setProperty('--animated-card-left', `${startX}px`);
+            document.documentElement.style.setProperty('--animated-card-top', `${startY}px`);
+            document.documentElement.style.setProperty('--animated-card-dx', `${dx}px`);
+            document.documentElement.style.setProperty('--animated-card-dy', `${dy}px`);
+            
+            this.animatedCard = card;  
+        },
+
+        drawCardFromPlayerToTable(card, playerIndex) {
+            const playedCard = this.$refs.gameTable.$children[1].$el;
+            const player = this.$refs.enemies.$children[playerIndex].$el;
+
+
+            this.animateCard(card, player, playedCard);           
+        },
+
+        drawCardFromDeckToPlayer(card, playerIndex) {
+            const deck = this.$refs.gameTable.$children[0].$el;
+            const player = this.$refs.enemies.$children[playerIndex].$el;
+
+            this.animateCard(card, deck, player);
+        },
     },
 
     firebase() {
-        const playerId = firebase.auth().currentUser.uid;
         return {
             gameRef: firebase.database().ref(this.gameId),
-            handRef: firebase.database().ref(`hands/${this.gameId.replace('games/', '')}/${playerId}`)
         }
     },
 
     computed: {
-        directionIcon() {
-            return this.direction === 0 ? 'switch_right' : 'switch_left';
+        containerStyle() {
+            return {
+                background: this.$vuetify.theme.themes.light.primary
+            }
         },
 
         direction() {
@@ -136,46 +126,6 @@ export default {
             }
 
             return this.gameRef.state.direction;
-        },
-
-        imOwner() {
-            if (!this.gameRef) {
-                return false;
-            }
-
-            return this.playerId === this.gameRef.owner;
-        },
-
-        myTurn() {
-            if (!this.gameRef) {
-                return false;
-            }
-
-            return this.gameRef.state.turn === firebase.auth().currentUser.uid;
-        },
-
-        containerStyle() {
-            return {
-                background: this.$vuetify.theme.themes.light.primary
-            }
-        },
-
-        enemies() {
-            if (!this.gameRef) {
-                return [];
-            }
-
-            console.log(this.gameRef.state.turn, this.gameRef.players)
-
-            const playerId = firebase.auth().currentUser.uid;
-
-            return Object.keys(this.gameRef.players || {})
-                .filter(pid => pid !== playerId)
-                .map(uid => ({
-                    uid,
-                    turn: this.gameRef.state.turn === uid,
-                    cards: this.gameRef.state.counts.cards[uid] || 0
-                }));
         }
     }
 }
@@ -204,14 +154,30 @@ export default {
         width: 100%;
     }
 
-    .chosen {
-        background: red !important;
+    :root {
+        --animated-card-dx: 0;
+        --animated-card-dy: 0;
+        --animated-card-top: 0;
+        --animated-card-left: 0;
     }
 
-    .actions {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-evenly;
-        align-content: center;
+    .animated-card {
+        position: absolute;
+        top: var(--animated-card-top);
+        left: var(--animated-card-left);   
+    }
+
+    .move-card-enter-active {
+        animation: move-card-animation 0.5s cubic-bezier(0.445, 0.05, 0.55, 0.95);
+    }
+
+    @keyframes move-card-animation {
+        0% {
+            transform: rotate(-30deg);
+        }
+
+        100%  {
+            transform: translate(var(--animated-card-dx), var(--animated-card-dy)) rotate(0deg); 
+        }
     }
 </style>

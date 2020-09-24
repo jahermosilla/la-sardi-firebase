@@ -35,6 +35,7 @@ export async function playCard(card: ICard, { gameId, userId, game, hand }: { ga
   if ([3, 7].indexOf(card.value) < 0) {
     const turns = card.value === 11 ? 2 : 1;
     changes.turn = getNextPlayer(newGame, turns);
+    // @TODO: Check 12 when only 2 players left
   }
 
   const cardIndex: number = hand
