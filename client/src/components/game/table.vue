@@ -1,10 +1,13 @@
 <template>
     <div style="background: rgba(0, 0, 0, 0.25)" class="elevation-4 rounded game-row d-flex flex-grow-1 flex-row justify-space-around align-center">
+        <!-- Dialog for changing card color (10) -->
+        <change-color-dialog v-model="changeColorOpened" @submit="onChangeColor"></change-color-dialog>
+        
         <div
             @click="takeFromDeck"
             style="position: relative;"
             :style="{ pointerEvents: myTurn ? 'auto' : 'none' }"
-            class="deck-deal"
+            :class="{ 'deck-deal': showDeckAnimation }"
         >
             <game-card :disabled="!myTurn" :value="2" color="NONE" style="cursor: pointer; position: relative;" />
             <div class="white--text headline deck-size--text">{{deckSize}}</div>
@@ -16,6 +19,7 @@
                 group="cards"
                 handle="fake"
                 @change="onCardPlayed"
+                ghost-class="ghost"
                 style="width: 100px; height: 153px; z-index: 2;"
             >
             </draggable>
@@ -23,7 +27,7 @@
                 v-bind="playedCard"
                 :disabled="false"
                 no-pointer
-                style="position: absolute; top:50%; left:50%; transform: translate(-50%, -50%);"
+                style="pointer-events: none; position: absolute; top:50%; left:50%; transform: translate(-50%, -50%);"
             />
         </div>
 
@@ -40,6 +44,7 @@
 <script>
 import GameCard from '@/components/game/card';
 import Draggable from 'vuedraggable';
+import ChangeColorDialog from '@/components/dialogs/ChangeColor';
 import * as db from '@/db';
 import firebase from 'firebase/app';
 import 'firebase/auth';
@@ -53,17 +58,30 @@ export default {
 
     components: {
         GameCard,
-        Draggable
+        Draggable,
+        ChangeColorDialog
     },
 
     data() {
         return {
             playedCards: [],
+            changeColorOpened: false,
+            showDeckAnimation: false
         }
     },
 
     methods: {
         async onCardPlayed({ added: { element: card } }) {
+            if (card.value === 10) {
+                return (this.changeColorOpened = true);
+            }
+
+            this.userPlayedCard = card;
+
+            await db.playCard(card, this.gameRef['.key']);
+        },
+
+        async onChangeColor(card) {
             this.userPlayedCard = card;
 
             await db.playCard(card, this.gameRef['.key']);
@@ -104,6 +122,10 @@ export default {
 </script>
 
 <style>
+.ghost {
+    z-index: 2;
+}
+
 .boing {
     animation: boing-animation;
     animation-duration: 0.5s;

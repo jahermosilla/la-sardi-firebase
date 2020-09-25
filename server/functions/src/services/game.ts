@@ -13,7 +13,7 @@ export async function create({
   isPrivate: boolean;
   qtt: IGameQuantities;
 }): Promise<string> {
-  const deck = Deck.createShuffledDeck();
+  const deck = Deck._createShuffledDeck();
   const game = getEmpty({ owner, isPrivate, qtt });
 
   const key = (await firebase.database().ref("games").push()).key;

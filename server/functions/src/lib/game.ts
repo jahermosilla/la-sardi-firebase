@@ -1,7 +1,6 @@
 import { IGameNode, IGameQuantities } from "./interfaces/game";
 import { GameDirection } from "./enums/game-direction";
 
-import Deck from "./deck";
 import { GameStatus } from "./enums/game-status";
 
 export function getEmpty({
@@ -13,7 +12,6 @@ export function getEmpty({
   isPrivate: boolean,
   qtt: IGameQuantities
 }) : IGameNode {
-  const deck = Deck.createShuffledDeck();
   const createdAt = new Date().getTime();
 
   return {
@@ -28,12 +26,16 @@ export function getEmpty({
       turn: null,
       playedCard: null,
       direction: GameDirection.Clockwise,
+      pass: {
+        [owner]: false
+      },
       counts: {
         cards: {
           [owner]: 0
         },
         acc: 0,
-        deck: deck.length
+        // TODO Refactor deck size
+        deck: qtt.decks * 48
       }
     },
 

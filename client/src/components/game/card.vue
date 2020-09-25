@@ -5,7 +5,7 @@
             <vue-global-events target="window" @resize="onResize"></vue-global-events>
         </div>
 
-        <div class="card-back" :style="styleBack"></div>
+        <div v-if="withBack" class="card-back" :style="styleBack"></div>
       </div>
   </transition>
 </template>
@@ -41,6 +41,13 @@ export default {
             type: Boolean,
             default() {
                 return false;
+            }
+        },
+
+        withBack: {
+            type: Boolean,
+            default() {
+                return true;
             }
         },
 
@@ -132,11 +139,11 @@ export default {
     transition: transform 0.2s ease-in-out;
 }
 
-.flipped .game-card {
+.card-flipped .game-card {
     transform: rotateY(180deg) !important;
 }
 
-.flipped .card-back {
+.card-flipped .card-back {
     transform: rotateY(0deg) !important;
 }
 </style>

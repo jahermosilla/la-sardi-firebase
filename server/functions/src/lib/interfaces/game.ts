@@ -33,8 +33,11 @@ export declare interface IGameActionOptions {
     userId: string
 }
 
+/**
+ * The boolean value represents if the user has ended or not
+ */
 export declare interface IPlayers {
-    [key: string]: true
+    [key: string]: boolean
 };
 
 export declare interface IGameProperties {
@@ -44,21 +47,26 @@ export declare interface IGameProperties {
 };
 
 export declare interface IGameQuantities {
-        cards: number,
-        decks: number,
-        players: number
-    } 
+    cards: number,
+    decks: number,
+    players: number
+} 
 
 export declare interface IGameState {
     turn: string | null,
     playedCard: ICard | null,
     direction: GameDirection,
+    pass: IPlayersPass,
     counts: {
         cards: IPlayerCardCount,
         acc: number,
         deck: number
     }
 };
+
+export declare interface IPlayersPass {
+    [key: string]: boolean
+}
 
 export declare interface IPlayerCardCount {
     [key: string]: number

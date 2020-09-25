@@ -4,7 +4,15 @@ import { asList, CardColor } from "./enums/card-color";
 import Card from "./card";
 
 export default class Deck extends Array<ICard> {
-  static createShuffledDeck(): Array<ICard> {
+  static createShuffledDeck(length: number): Array<ICard> {
+    const orderedDecks = Array.from({ length })
+      .map((e, i) => this._createShuffledDeck())
+      .reduce((a, b) => a.concat(b));
+
+    return shuffle(orderedDecks);
+  }
+
+  static _createShuffledDeck(): Array<ICard> {
     const orderedDeck = asList().reduce(
       (list: Array<ICard>, color) => [...list, ...this.createCardsFor(color)],
       []

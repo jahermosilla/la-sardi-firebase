@@ -1,5 +1,5 @@
 <template>
-    <div class="pt-2 game-row d-flex flex-row justify-space-between">
+    <div class="card-list pt-2 game-row d-flex flex-row justify-space-between">
         <div class="actions">
             <v-btn icon></v-btn>
         </div>
@@ -7,14 +7,14 @@
             <draggable
                 :list="handRef"
                 group="cards"
-                ghost-class="chosen"
                 handle=".handle"
                 :ordered="false"
             >
                 <game-card
                     v-for="(card, i) in (handRef || [])"
                     v-bind="card"
-                    :key="i"
+                    :key="`${card.value}${card.color}${i}`"
+                    :with-back="false"
                     class="mx-1"
                     style="display: inline-block;"
                     :disabled="!myTurn || !isCardPlayable(card)"
@@ -105,9 +105,3 @@ export default {
     }
 }
 </script>
-
-<style>
-.chosen {
-    background: rgba(0, 0, 0, 0.25) !important;
-}
-</style>
