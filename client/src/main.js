@@ -6,6 +6,8 @@ import vuetify from './plugins/vuetify';
 import { rtdbPlugin } from 'vuefire';
 import './db';
 
+import './registerServiceWorker';
+
 Vue.use(rtdbPlugin);
 
 Vue.config.productionTip = false
