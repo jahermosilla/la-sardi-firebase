@@ -45,10 +45,12 @@ export async function start(gameId: string, { game, deck }: { game: IGameNode, d
   game.state.turn = playerKeys[randomIndex];
 
   for (let i = 0; i < numCards; i++) {
-    for (const playerId of Object.keys(game.players)) {
+    for (const playerId of playerKeys) {
       hands[playerId] = [...(hands[playerId] || []), deck.pop() as ICard];
     }
   }
+
+  game.state.counts.deck = game.state.counts.deck - (numCards * numPlayers);
 
   for (const playerId of Object.keys(game.players)) {
     game.state.counts.cards[playerId] = hands[playerId].length;

@@ -13,7 +13,8 @@
             >
                 <game-card
                     v-for="(card, i) in (handRef || [])"
-                    :key="i" :color="card._color" :val="card._value"
+                    v-bind="card"
+                    :key="i"
                     class="mx-1"
                     style="display: inline-block;"
                     :disabled="!myTurn || !isCardPlayable(card)"
@@ -29,7 +30,9 @@
 <script>
 import Draggable from 'vuedraggable';
 import GameCard from '@/components/game/card';
-import firebase from 'firebase';
+import firebase from 'firebase/app';
+import 'firebase/database';
+import 'firebase/auth';
 
 export default {
     components: {
@@ -64,11 +67,9 @@ export default {
 
     computed: {
         myTurn() {
-            if (!this.gameRef) {
-                return false;
-            }
-
-            return this.gameRef.state.turn === firebase.auth().currentUser.uid;
+            return this.gameRef
+                ? this.gameRef.state.turn === firebase.auth().currentUser.uid
+                : false;
         },
 
         imOwner() {
@@ -83,30 +84,23 @@ export default {
     },
 
     methods: {
-        translateCard(card) {
-            return {
-                ...card,
-                val: card.value
-            }
-        },
-
         isCardPlayable(card) {
-            const playedCard = this.translateCard(this.gameRef.state.playedCard);
+            const playedCard = this.gameRef.state.playedCard;
             const acc = this.gameRef.state.counts.acc;
 
             if (acc > 0) {
-                return playedCard.val === card.val;
+                return playedCard.value === card.value;
             }
 
-            if (card.val === 10) {
+            if (card.value === 10) {
                 return true;
             }
 
-            if (playedCard.val === 10) {
-                return playedCard.color === card.color || card.val === 10;
+            if (playedCard.value === 10) {
+                return playedCard.color === card.color || card.value === 10;
             }
 
-            return playedCard.val === card.val || playedCard.color === card.color;
+            return playedCard.value === card.value || playedCard.color === card.color;
         },
     }
 }

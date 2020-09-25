@@ -28,7 +28,8 @@ import GameCard from '@/components/game/card';
 import Player from '@/components/game/player';
 import PlayerActions from '@/components/game/player-actions';
 
-import firebase from 'firebase';
+import firebase from 'firebase/app';
+import 'firebase/database';
 
 export default {
     props: {
@@ -54,25 +55,18 @@ export default {
         }
     },
 
-    mounted() {
-        setInterval(() => {
-            const card = {
-                color: 'NONE',
-                val: 2
-            }
+    // mounted() {
+    //     setInterval(() => {
+    //         const card = {
+    //             color: 'NONE',
+    //             value: 2
+    //         }
 
-            this.drawCardFromDeckToPlayer(card, 2)
-        }, 500);
-    },
+    //         this.drawCardFromPlayerToTable(card, 2)
+    //     }, 500);
+    // },
 
     methods: {
-        translateCard(card) {
-            return {
-                ...card,
-                val: card.value
-            }
-        },
-
         animateCard(card, from, to) {
             const startX = from.getBoundingClientRect().left;
             const startY = from.getBoundingClientRect().top;

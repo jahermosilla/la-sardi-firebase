@@ -2,11 +2,13 @@ import { CardColor } from "./enums/card-color";
 import { ICard } from "./interfaces/game";
 
 export default class Card implements ICard {
-    private _color!: CardColor;
+    color!: CardColor;
 
-    private _value!: number;
+    value!: number;
 
-    constructor() {}
+    constructor() {
+        console.warn('Card created without values. Make sure to set values later');
+    }
 
     static from(value: number, color: CardColor) {
         const card = new Card();
@@ -16,24 +18,8 @@ export default class Card implements ICard {
         return card;
     }
 
-    get color() {
-        return this._color;
-    }
-
-    set color(color) {
-        this._color = color;
-    }
-
-    get value() {
-        return this._value;
-    }
-
-    set value(value) {
-        this._value = value;
-    }
-
-    equals(other: ICard) {
-        return this.color === other.color
-            && this.value === other.value;
+    static equals(a: ICard, b: ICard) {
+        return a.color === b.color
+            && a.value === b.value;
     }
 }

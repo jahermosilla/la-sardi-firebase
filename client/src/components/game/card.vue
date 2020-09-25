@@ -29,7 +29,7 @@ export default {
             type: String
         },
 
-        val: {
+        value: {
             required: true,
             type: Number,
             check(n) {
@@ -40,7 +40,7 @@ export default {
         disabled: {
             type: Boolean,
             default() {
-                return true;
+                return false;
             }
         },
 
@@ -87,7 +87,7 @@ export default {
         },
 
         position() {
-            const dx = this.val - 1;
+            const dx = this.value - 1;
             const dy = ['OROS', 'COPAS', 'ESPADAS', 'BASTOS', 'NONE'].reverse().indexOf(this.color);
 
             const w = (this.targetWidth * 12) - (this.targetWidth * dx);

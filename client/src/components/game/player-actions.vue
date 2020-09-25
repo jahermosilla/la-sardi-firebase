@@ -1,9 +1,9 @@
 <template>
     <div class="actions">
-        <v-btn icon v-show="imOwner" @click="startGame">
-            <v-icon style="font-size: 1.9rem;">send</v-icon>
+        <v-btn icon v-show="imOwner && !gameStarted" @click="startGame">
+            <v-icon style="font-size: 1.9rem;">mdi-send</v-icon>
         </v-btn>
-        <v-btn icon @click="pass">
+        <v-btn :disabled="!myTurn" icon @click="pass">
             <v-icon style="font-size: 2.5rem;">{{directionIcon}}</v-icon>
         </v-btn>
     </div>
@@ -36,17 +36,22 @@ export default {
 
     computed: {
         directionIcon() {
-            return this.direction === 0 ? 'switch_right' : 'switch_left';
+            // return this.direction === 0 ? 'switch_right' : 'switch_left';
+            return 'mdi-swap-horizontal';
+        },
+
+        gameStarted() {
+            return this.gameRef.status === 1
         }
     },
 
     methods: {
         async startGame() {
-            await db.startGame(this.gameRef()['.key']);
+            await db.startGame(this.gameRef['.key']);
         },
 
         async pass() {
-            await db.pass(this.gameRef()['.key']);
+            await db.pass(this.gameRef['.key']);
         },
     }
 

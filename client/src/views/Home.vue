@@ -10,6 +10,10 @@
       <v-toolbar-title>{{user.displayName}}</v-toolbar-title>
     </v-app-bar>
 
+    <div class="cards-container">
+    <game-card class="home-game-card" v-for="(card, i) in randomCards" :key="i" v-bind="card"></game-card>
+    </div>
+
     <v-row align="center" justify="center">
       <v-col cols="12">
         <v-img :src="backgroundImage" contain max-height="45vh"></v-img>
@@ -51,19 +55,26 @@
 <script>
 import CreateGame from '@/components/dialogs/CreateGame';
 import JoinGame from '@/components/dialogs/JoinGame';
+import GameCard from '@/components/game/card';
 import backgroundImage from '@/assets/back.svg';
-import firebase from 'firebase';
+
+import firebase from 'firebase/app';
+import 'firebase/auth';
+
+import { shuffle, sampleSize } from "lodash";
 
 export default {
   name: 'Home',
 
   components: {
     CreateGame,
-    JoinGame
+    JoinGame,
+    GameCard
   },
 
   data() {
     return {
+      randomCards: [],
       backgroundImage,
       user: null,
       dialogs: {
@@ -81,6 +92,12 @@ export default {
 
   created() {
     this.user = firebase.auth().currentUser;
+    
+    const deck = ['OROS', 'COPAS', 'ESPADAS', 'BASTOS']
+      .map(color => Array.from({ length: 12 }).map((_, i) => ({ color, value: i + 1 })))
+      .reduce((a, b) => a.concat(b));
+
+    this.randomCards = sampleSize(shuffle(deck), 5);
   },
 
   computed: {
@@ -95,5 +112,48 @@ export default {
 <style>
   .full {
     flex: 1 1 !important;
+  }
+
+  .cards-container {
+    position: absolute;
+    display: flex;
+  }
+
+  .cards-container * {
+    margin:10px;
+  }
+
+  .home-game-card  {
+    animation: home-game-card-animation 1s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+  }
+
+  .home-game-card:nth-child(1)  {
+    animation-delay: 30ms;
+  }
+
+  .home-game-card:nth-child(2)  {
+    animation-delay: 200ms;
+  }
+
+  .home-game-card:nth-child(3)  {
+    animation-delay: 700ms;
+  }
+
+  .home-game-card:nth-child(4)  {
+    animation-delay: 900ms;
+  }
+
+  .home-game-card:nth-child(5)  {
+    animation-delay: 1000ms;
+  }
+
+  @keyframes home-game-card-animation {
+    0% {
+      transform: translateY(-1000px);
+    }
+
+    100% {
+      transform: translateY(1000px) rotateY(random(360)deg);
+    }
   }
 </style>

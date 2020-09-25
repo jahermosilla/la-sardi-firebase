@@ -58,6 +58,8 @@ async function playCard(req: Request, res: Response, next: NextFunction) {
     const userId = ((req as any).user as firebase.auth.DecodedIdToken).uid;
 
     await service.playCard(card, { gameId, userId, game, hand });
+
+    res.json({ ok: true });
   } catch (error) {
     next(error);
   }
@@ -69,6 +71,8 @@ async function pass(req: Request, res: Response, next: NextFunction) {
     const userId = ((req as any).user as firebase.auth.DecodedIdToken).uid;
 
     await service.pass({ gameId, userId });
+
+    res.json({ ok: true });
   } catch (error) {
     next(error);
   }
@@ -83,7 +87,10 @@ async function takeFromDeck(req: Request, res: Response, next: NextFunction) {
     const hand: Array<ICard> = data.get(RequestData.HAND);
 
     const { gameId } = req.params;
+
     await service.takeFromDeck({ gameId, userId, deck, game, hand });
+
+    res.json({ ok: true });
   } catch (error) {
     next(error);
   }

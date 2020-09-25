@@ -1,7 +1,12 @@
 <template>
     <div style="background: rgba(0, 0, 0, 0.25)" class="elevation-4 rounded game-row d-flex flex-grow-1 flex-row justify-space-around align-center">
-        <div style="position: relative;" class="deck-deal">
-            <game-card :val="2" color="NONE" style="cursor: pointer; position: relative;" />
+        <div
+            @click="takeFromDeck"
+            style="position: relative;"
+            :style="{ pointerEvents: myTurn ? 'auto' : 'none' }"
+            class="deck-deal"
+        >
+            <game-card :disabled="!myTurn" :value="2" color="NONE" style="cursor: pointer; position: relative;" />
             <div class="white--text headline deck-size--text">{{deckSize}}</div>
         </div>
 
@@ -15,7 +20,7 @@
             >
             </draggable>
             <game-card
-                :color="playedCard._color" :val="playedCard._value"
+                v-bind="playedCard"
                 :disabled="false"
                 no-pointer
                 style="position: absolute; top:50%; left:50%; transform: translate(-50%, -50%);"
@@ -36,6 +41,8 @@
 import GameCard from '@/components/game/card';
 import Draggable from 'vuedraggable';
 import * as db from '@/db';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 
 export default {
     props: {
@@ -57,41 +64,40 @@ export default {
 
     methods: {
         async onCardPlayed({ added: { element: card } }) {
-            this.userPlayedCard = { color: card._color, val: card._value };
+            this.userPlayedCard = card;
 
             await db.playCard(card, this.gameRef['.key']);
         },
 
-        translateCard(card) {
-            return {
-                ...card,
-                val: card.value
-            }
+        async takeFromDeck() {
+            await db.takeFromDeck(this.gameRef['.key']);
         }
     },
 
     computed: {
         playedCard() {
-            const defaultCard = { _color: 'NONE', _value: 1 };
+            const defaultCard = { color: 'NONE', value: 1 };
             return this.gameRef && this.gameRef.state.playedCard
-                    ? this.translateCard(this.gameRef.state.playedCard)
+                    ? this.gameRef.state.playedCard
                     : defaultCard;
         },
 
         acc() {
-            if (!this.gameRef) {
-                return 0;
-            }
-
-            return this.gameRef.state.counts.acc;
+            return this.gameRef
+                ? this.gameRef.state.counts.acc
+                : 0;
         },
 
         deckSize() {
-            if (!this.gameRef) {
-                return 0;
-            }
-            
-            return this.gameRef.state.counts.deck;
+            return this.gameRef
+                ? this.gameRef.state.counts.deck
+                : 0;
+        },
+
+        myTurn() {
+            return this.gameRef
+                ? this.gameRef.state.turn === firebase.auth().currentUser.uid
+                : false;
         },
     }
 }

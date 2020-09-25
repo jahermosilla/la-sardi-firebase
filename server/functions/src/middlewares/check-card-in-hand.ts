@@ -16,8 +16,8 @@ export default async function (
   
   const { card }: { card: ICard } = req.body;
   const cardIndex = hand
-    .map(c => transformInstance(c, new Card))
-    .findIndex(card.equals.bind(card));
+    .map((c) => transformInstance(c, new Card()))
+    .findIndex((other) => Card.equals(card, other));
   
   if (cardIndex < 0) {
     return next(createError(400, "You cant play a card you dont own"));

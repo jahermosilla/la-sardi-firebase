@@ -66,7 +66,5 @@ export declare interface IPlayerCardCount {
 
 export declare interface ICard {
     value: number,
-    color: CardColor,
-
-    equals: (other: ICard) => boolean
+    color: CardColor
 }

@@ -61,7 +61,7 @@ async function join(req: Request, res: Response, next: NextFunction) {
 
     await service.join(playerId, token);
 
-    res.json({ message: 'OK' });
+    res.json({ ok: true });
   } catch (error) {
     next(error);
   }
@@ -75,8 +75,9 @@ async function start(req: Request, res: Response, next: NextFunction) {
     const { gameId } = req.params;
 
     await service.start(gameId, { game, deck });
+
+    res.json({ ok: true });
   } catch (error) {
-    console.error(error);
     next(error);  
   }
 }

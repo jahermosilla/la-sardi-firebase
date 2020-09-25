@@ -40,7 +40,7 @@ export async function playCard(card: ICard, { gameId, userId, game, hand }: { ga
 
   const cardIndex: number = hand
     .map(c => transformInstance(c, new Card))
-    .findIndex(card.equals.bind(card));
+    .findIndex(other => Card.equals(card, other));
 
   hand.splice(cardIndex, 1);
 
@@ -97,6 +97,8 @@ export async function takeFromDeck({
     [`hands/${gameId}/${userId}`]: hand,
     [`games/${gameId}/state/counts/acc`]: game.state.counts.acc,
     [`games/${gameId}/state/counts/cards/${userId}`]: hand.length,
+    [`games/${gameId}/state/counts/deck`]: deck.length,
+    [`decks/${gameId}`]: deck,
   };
 
   await firebase.database().ref().update(updates);
