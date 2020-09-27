@@ -10,5 +10,11 @@ module.exports = {
 
   "transpileDependencies": [
     "vuetify"
-  ]
+  ],
+
+  pwa: {
+    themeColor: '#009688',
+    name: 'La Sardi',
+    assetsVersion: 1
+  }
 }

@@ -4,23 +4,16 @@
             <v-btn icon></v-btn>
         </div>
         <div style="overflow-x: scroll; overflow-y: hidden; white-space: nowrap; max-width: 80vw;">
-            <draggable
-                :list="handRef"
-                group="cards"
-                handle=".handle"
-                :ordered="false"
-            >
-                <game-card
-                    v-for="(card, i) in (handRef || [])"
-                    v-bind="card"
-                    :key="`${card.value}${card.color}${i}`"
-                    :with-back="false"
-                    class="mx-1"
-                    style="display: inline-block;"
-                    :disabled="!myTurn || !isCardPlayable(card)"
-                    :class="{ handle: myTurn && isCardPlayable(card) }"
-                />
-            </draggable>
+            <game-card
+                v-for="(card, i) in (handRef || [])"
+                v-bind="card"
+                :key="`${card.value}${card.color}${i}`"
+                :with-back="false"
+                class="mx-1"
+                style="display: inline-block;"
+                :disabled="!myTurn || !isCardPlayable(card)"
+                :class="{ handle: myTurn && isCardPlayable(card) }"
+            />
         </div>
 
         <slot name="player-actions" v-bind="{ gameRef, myTurn, imOwner }" />
@@ -28,7 +21,6 @@
 </template>
 
 <script>
-import Draggable from 'vuedraggable';
 import GameCard from '@/components/game/card';
 import firebase from 'firebase/app';
 import 'firebase/database';
@@ -36,7 +28,6 @@ import 'firebase/auth';
 
 export default {
     components: {
-        Draggable,
         GameCard
     },
 
@@ -55,6 +46,10 @@ export default {
         return {
             handRef: []
         }
+    },
+
+    mounted() {
+
     },
 
     firebase() {

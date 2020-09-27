@@ -10,10 +10,6 @@
       <v-toolbar-title>{{user.displayName}}</v-toolbar-title>
     </v-app-bar>
 
-    <div class="cards-container">
-    <game-card class="home-game-card" v-for="(card, i) in randomCards" :key="i" v-bind="card"></game-card>
-    </div>
-
     <v-row align="center" justify="center">
       <v-col cols="12">
         <v-img :src="backgroundImage" contain max-height="45vh"></v-img>
@@ -55,7 +51,6 @@
 <script>
 import CreateGame from '@/components/dialogs/CreateGame';
 import JoinGame from '@/components/dialogs/JoinGame';
-import GameCard from '@/components/game/card';
 import backgroundImage from '@/assets/back.svg';
 
 import firebase from 'firebase/app';
@@ -68,8 +63,7 @@ export default {
 
   components: {
     CreateGame,
-    JoinGame,
-    GameCard
+    JoinGame
   },
 
   data() {
@@ -117,6 +111,8 @@ export default {
   .cards-container {
     position: absolute;
     display: flex;
+    max-width: 90vw;
+    overflow: hidden;
   }
 
   .cards-container * {

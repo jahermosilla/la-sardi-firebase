@@ -1,29 +1,16 @@
 <template>
-    <div
-        class="child-flex"
-        @animationend="playTurnAnimation = false"
-        :class="{ 'user-turn': playTurnAnimation }"
-    >
-        <v-badge
-            bordered
-            bottom
-            offset-x="22px"
-            offset-y="22px"
-            ripple
-            :size="30"
-            @click="() => {}"
-            style="cursor: pointer;"
-            overlap
-            :value="true"
-            :content="`${cards}`"
-            :color="badgeColor"
-        >
-            <v-card class="pa-2 d-flex flex-column justify-center align-center">
-                <v-img class="rounded"  src="https://api.adorable.io/avatars/285/abott@adorable.png"></v-img>
-                <div class="subtitle py-2 enemy-name--text">{{uid}}</div>
-            </v-card>
-        </v-badge>
-    </div>
+    <v-card max-height="20vh" class="mx-1">
+        <v-card-text class="pa-1 d-flex flex-column align-center">
+        <div class="enemy-name--text font-weight-bold">{{uid}}</div>
+        <v-avatar :size="50" @animationend="playTurnAnimation = false" :class="{ 'user-turn': playTurnAnimation }">
+            <img src="https://api.adorable.io/avatars/285/abott@adorable.png" alt="">
+        </v-avatar>
+        </v-card-text>
+        <v-card-actions class="grey lighten-4">
+            <v-spacer></v-spacer>            
+            <v-avatar size="25" class="white--text pa-1" :color="badgeColor">{{cards}}</v-avatar>
+        </v-card-actions>
+    </v-card>
 </template>
 
 <script>
@@ -75,7 +62,7 @@ export default {
 <style>
 .enemy-name--text {
     text-overflow: ellipsis;
-    max-width: 50%;
+    max-width: 100%;
     overflow: hidden;
     white-space: nowrap;
     user-select: none;
@@ -84,6 +71,7 @@ export default {
 .user-turn {
     animation: user-turn-animation;
     animation-duration: 0.2s;
+    animation-iteration-count: 4;
     animation-timing-function: cubic-bezier(0.455, 0.03, 0.515, 0.955);
 }
 

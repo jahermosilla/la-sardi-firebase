@@ -1,5 +1,5 @@
 <template>
-    <div style="background: rgba(0, 0, 0, 0.25)" class="elevation-4 rounded game-row d-flex flex-grow-1 flex-row justify-space-around align-center">
+    <div style="background: rgba(0, 0, 0, 0.25)" class="elevation-4 px-4 rounded game-row d-flex flex-grow-1 flex-row justify-space-between align-center">
         <!-- Dialog for changing card color (10) -->
         <change-color-dialog v-model="changeColorOpened" @submit="onChangeColor"></change-color-dialog>
         
@@ -13,23 +13,14 @@
             <div class="white--text headline deck-size--text">{{deckSize}}</div>
         </div>
 
-        <div style="position: relative;">
-            <draggable
-                :list="playedCards"
-                group="cards"
-                handle="fake"
-                @change="onCardPlayed"
-                ghost-class="ghost"
-                style="width: 100px; height: 153px; z-index: 2;"
-            >
-            </draggable>
-            <game-card
-                v-bind="playedCard"
-                :disabled="false"
-                no-pointer
-                style="pointer-events: none; position: absolute; top:50%; left:50%; transform: translate(-50%, -50%);"
-            />
-        </div>
+        <game-card
+            ref="playedCard"
+            v-bind="playedCard"
+            :disabled="false"
+            no-pointer
+            style="pointer-events: none;"
+
+        />
 
         <div v-if="acc > 0" class="d-flex flex-column align-center">
             <div class="white--text boing">
@@ -43,11 +34,11 @@
 
 <script>
 import GameCard from '@/components/game/card';
-import Draggable from 'vuedraggable';
 import ChangeColorDialog from '@/components/dialogs/ChangeColor';
 import * as db from '@/db';
 import firebase from 'firebase/app';
 import 'firebase/auth';
+import interact from 'interactjs';
 
 export default {
     props: {
@@ -58,20 +49,38 @@ export default {
 
     components: {
         GameCard,
-        Draggable,
         ChangeColorDialog
     },
 
     data() {
         return {
-            playedCards: [],
             changeColorOpened: false,
             showDeckAnimation: false
         }
     },
 
+    mounted() {
+        interact(this.$refs.playedCard.$el).dropzone({
+            ondrop: (event) => {
+                const { target } = event.draggable;
+                const props = JSON.parse(target.getAttribute('data-app'));
+                
+                this.onCardPlayed(props);
+            }
+        });
+    },
+
+    beforeDestroy() {
+        interact(this.$refs.playedCard.$el).unset();
+    },
+
     methods: {
-        async onCardPlayed({ added: { element: card } }) {
+        async onCardPlayed(props) {
+            const card = {
+                color: props.color,
+                value: props.value
+            };
+
             if (card.value === 10) {
                 return (this.changeColorOpened = true);
             }

@@ -1,7 +1,7 @@
 <template>
     <v-container fluid class="py-0">
-        <v-row justify="space-between">
-            <v-col class="d-flex child-flex" v-for="enemy in enemies" :key="enemy.uid" :cols="3" :sm="2" :lg="1">
+        <v-row justify="center">
+            <v-col class="px-0" v-for="enemy in enemies" :key="enemy.uid" :cols="3">
                 <enemy v-bind="enemy"/>
             </v-col>
         </v-row>
