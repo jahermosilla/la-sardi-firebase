@@ -44,8 +44,6 @@ async function create(req: Request, res: Response, next: NextFunction) {
     const owner = ((req as any).user as firebase.auth.DecodedIdToken).uid;
     const { isPrivate, qtt } = req.body;
 
-    console.log('[USER ID]: ', owner);
-
     const key = await service.create({ owner, isPrivate, qtt });
 
     res.json({ key });
@@ -78,6 +76,7 @@ async function start(req: Request, res: Response, next: NextFunction) {
 
     res.json({ ok: true });
   } catch (error) {
+    console.error(error);
     next(error);  
   }
 }

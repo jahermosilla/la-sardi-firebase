@@ -8,6 +8,8 @@ import { GameStatus } from "../enums/game-status";
  */
 export declare interface IGameNode {
     owner: string,
+    isPrivate: boolean,
+    token?: string | null,
     properties: IGameProperties,
     state: IGameState,
     status: GameStatus,
@@ -28,6 +30,22 @@ export declare interface IDeckNode {
     [key: string]: Array<ICard>
 };
 
+/**
+ * Strcuture of "player" record in players node
+ */
+export declare interface IPlayerNode {
+    [key: string]: {
+        game: string,
+        photoURL: string,
+        name: string,
+        rank: {
+            wins: number,
+            lost: number,
+            played: number
+        }
+    }
+};
+
 export declare interface IGameActionOptions {
     gameId: string,
     userId: string
@@ -42,7 +60,6 @@ export declare interface IPlayers {
 
 export declare interface IGameProperties {
     createdAt: number,
-    isPrivate: boolean,
     qtt: IGameQuantities
 };
 

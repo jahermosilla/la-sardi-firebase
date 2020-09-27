@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from "express";
 import { RequestData } from "../lib/helpers";
 import { ICard } from "../lib/interfaces/game";
 import createError from "http-errors";
-import transformInstance from "../lib/helpers/transform-instance";
 import Card from "../lib/card";
 
 export default async function (
@@ -16,7 +15,6 @@ export default async function (
   
   const { card }: { card: ICard } = req.body;
   const cardIndex = hand
-    .map((c) => transformInstance(c, new Card()))
     .findIndex((other) => Card.equals(card, other));
   
   if (cardIndex < 0) {

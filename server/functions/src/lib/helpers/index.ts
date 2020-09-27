@@ -30,7 +30,7 @@ async function getData(
 }
 
 async function toPromise(actions: Partial<IGameActionOptions> | IGameActionOptions, type: RequestData) {
-    const child = map.get(type)!(actions);
+    const child = requestsMap.get(type)!(actions);
     return (await firebase.database().ref().child(child).once('value')).val();
 }
 
@@ -45,13 +45,13 @@ export enum RequestData {
   HANDS = "HANDS",
 }
 
-const map: Map<RequestData, (action: Partial<IGameActionOptions>) => string> = new Map();
+const requestsMap: Map<RequestData, (action: Partial<IGameActionOptions>) => string> = new Map();
 
-map.set(RequestData.GAME, ({ gameId }) => `games/${gameId}`);
-map.set(RequestData.GAMESTATE, ({ gameId }) => `games/${gameId}/state`);
-map.set(RequestData.GAMESTATUS, ({ gameId }) => `games/${gameId}/status`);
-map.set(RequestData.OWNER, ({ gameId }) => `games/${gameId}/owner`);
-map.set(RequestData.DECK, ({ gameId }) => `decks/${gameId}`);
-map.set(RequestData.HANDS, ({ gameId }) => `hands/${gameId}`);
-map.set(RequestData.HAND, ({ gameId, userId }) => `hands/${gameId}/${userId}`);
-map.set(RequestData.PLAYERGAME, ({ userId }) => `users/${userId}/game`);
+requestsMap.set(RequestData.GAME, ({ gameId }) => `games/${gameId}`);
+requestsMap.set(RequestData.GAMESTATE, ({ gameId }) => `games/${gameId}/state`);
+requestsMap.set(RequestData.GAMESTATUS, ({ gameId }) => `games/${gameId}/status`);
+requestsMap.set(RequestData.OWNER, ({ gameId }) => `games/${gameId}/owner`);
+requestsMap.set(RequestData.DECK, ({ gameId }) => `decks/${gameId}`);
+requestsMap.set(RequestData.HANDS, ({ gameId }) => `hands/${gameId}`);
+requestsMap.set(RequestData.HAND, ({ gameId, userId }) => `hands/${gameId}/${userId}`);
+requestsMap.set(RequestData.PLAYERGAME, ({ userId }) => `users/${userId}/game`);

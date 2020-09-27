@@ -1,69 +1,72 @@
 import firebase from 'firebase-admin';
 import { GameDirection } from "../lib/enums/game-direction";
 import { ICard, IGameActionOptions, IGameNode, IGameState } from "../lib/interfaces/game";
-import { getGameById, updateGameState } from "./game";
-import createError from "http-errors";
-import transformInstance from '../lib/helpers/transform-instance';
+import { getGameById } from "./game";
 import Card from '../lib/card';
 
 export async function playCard(card: ICard, { gameId, userId, game, hand }: { gameId: string, userId: string, game: IGameNode, hand: Array<ICard> }) {
-  // Update the game based on played card
-  const changes: IGameState = { ...game.state };
-
-  // TODO: Update player hand
-
-  changes.playedCard = card;
+  const state : IGameState = {
+    ...game.state,
+    playedCard: card
+  };
+  const updates : any = {
+    [`games/${gameId}/state/playedCard`]: card,
+  };
 
   if ([1, 2].indexOf(card.value) >= 0) {
     const delta = card.value === 1 ? 6 : 2;
-    changes.counts = {
-      ...game.state.counts,
-      acc: game.state.counts.acc + delta,
-    };
+    const acc = game.state.counts.acc + delta;
+    updates[`games/${gameId}/state/counts/acc`] = acc;
+    state.counts.acc = acc;
   }
 
   if (card.value === 12) {
-    changes.direction = game.state.direction === GameDirection.Clockwise
+    const direction = game.state.direction === GameDirection.Clockwise
         ? GameDirection.Counterclockwise
         : GameDirection.Clockwise;
+    updates[`games/${gameId}/state/direction`] = direction;
+    state.direction = direction;
   }
 
-  // Get new turn
-  const newState = { ...game.state, ...changes };
-  const newGame  = { ...game, state: newState };
+  const playersLeft = Object.values(game.players).reduce((res, val) => res + (+!val), 0);
 
   if ([3, 7].indexOf(card.value) < 0) {
-    const turns = card.value === 11 ? 2 : 1;
-    changes.turn = getNextPlayer(newGame, turns);
-    // @TODO: Check 12 when only 2 players left
+    let turns =
+      card.value === 11 || (card.value === 12 && playersLeft <= 2) ? 2 : 1;
+
+    const newGame = { ...game, state };
+
+    updates[`games/${gameId}/state/turn`] = getNextPlayer(newGame, turns);
   }
 
+  // Update hand
   const cardIndex: number = hand
-    .map(c => transformInstance(c, new Card))
     .findIndex(other => Card.equals(card, other));
 
   hand.splice(cardIndex, 1);
-
-  const updates = {
-    [`games/${gameId}/state`]: changes,
-    [`hands/${gameId}/${userId}`]: hand
-  };
   
+  updates[`hands/${gameId}/${userId}`] = hand;
+
+  // Update player counts
+  updates[`games/${gameId}/state/counts/cards/${userId}`] = hand.length;
+
+  // Has finished?
+  if (hand.length === 0) {
+    updates[`games/${gameId}/players/${userId}`] = false;
+  }
+
   await firebase.database().ref().update(updates);
 }
 
 export async function pass({ userId, gameId }: IGameActionOptions) {
   const game = await getGameById(gameId);
 
-  if (game.state.turn !== userId) {
-    throw createError(400, "Not your turn");
-  }
-
-  const changes = {
-    turn: getNextPlayer(game, 1),
+  const updates = {
+    [`games/${gameId}/state/turn`]: getNextPlayer(game, 1),
+    [`games/${gameId}/pass/${userId}`]: true
   };
 
-  await updateGameState(gameId, changes);
+  await firebase.database().ref().update(updates);
 }
 
 export async function takeFromDeck({
@@ -107,19 +110,15 @@ export async function takeFromDeck({
 export function getNextPlayer(game: IGameNode, turns = 1) : string {
     const direction = game.state.direction;
     const actualTurn = game.state.turn;
-    const players = Object.keys(game.players);
+    const players = Object.keys(game.players).filter(playerId => !!game.players[playerId]);
     const index = players.findIndex(playerId => playerId === actualTurn);
-    
-    let actualIndex = null;
+    const sign = Math.sign(direction === GameDirection.Clockwise ? 1 : -1);
+    let actualIndex = index + (turns * sign);
 
-    if (direction === GameDirection.Clockwise) {
-      actualIndex = index >= players.length - turns
-          ? 0
-          : index + turns;
-    } else {
-      actualIndex = index === 0
-          ? players.length - turns
-          : index - turns;
+    if (actualIndex < 0) {
+      actualIndex += players.length;
+    } else if (actualIndex >= players.length) {
+      actualIndex -= players.length;
     }
 
     return players[actualIndex];
@@ -127,14 +126,12 @@ export function getNextPlayer(game: IGameNode, turns = 1) : string {
 
 export function checkCard(card: ICard, state: IGameState) : boolean {
     const { playedCard, counts: { acc } } = state;
-    const c = transformInstance(card, new Card);
-    const pc = transformInstance(playedCard as object, new Card);
     
     if (acc > 0) {
-        return c.value === (pc || {}).value;
+        return card.value === (playedCard || {}).value;
     }
 
-    return isCardPlayable(c, pc);
+    return isCardPlayable(card, playedCard);
 }
 
 export function isCardPlayable(userCard: ICard, gameCard: ICard | null) {

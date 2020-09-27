@@ -1,6 +1,6 @@
 import * as firebase from 'firebase-admin';
 import { getEmpty } from '../lib/game';
-import { ICard, IGameNode, IGameQuantities, IGameState, IHandNode } from '../lib/interfaces/game';
+import { ICard, IGameNode, IGameQuantities, IHandNode } from '../lib/interfaces/game';
 import Deck from '../lib/deck';
 import { GameStatus } from '../lib/enums/game-status';
 
@@ -65,22 +65,19 @@ export async function start(gameId: string, { game, deck }: { game: IGameNode, d
     [deckKey]: deck,
     [handsKey]: hands,
   };
-
-  console.log(updates);
-
+  
   await firebase.database().ref().update(updates);
 }
 
 export async function join(playerId: string, token: string) {
   const snapshot = await getGameByToken(token);
-  const game = snapshot.val();
   const gameId = snapshot.key;
 
-  const gameKey = `games/${gameId}/players`;
+  const gameKey = `games/${gameId}/players/${playerId}`;
   const userKey = `users/${playerId}/game`;
 
   const changes = {
-    [gameKey]: { ...game.players, [playerId]: true },
+    [gameKey]: true,
     [userKey]: gameId
   };
 
@@ -88,9 +85,17 @@ export async function join(playerId: string, token: string) {
 }
 
 export async function leave(playerId: string, gameId: string) {
-  await firebase.database().ref("games").child(gameId).child("players").child(playerId).remove();
-  await firebase.database().ref("hands").child(gameId).child(playerId).remove();
-  await firebase.database().ref("users").child(playerId).child("game").remove();
+  const updates = {
+    [`games/${gameId}/players/${playerId}`]: null,
+    [`hands/${gameId}/${playerId}`]: null,
+    [`users/${playerId}/game`]: null
+  };
+
+  // await firebase.database().ref("games").child(gameId).child("players").child(playerId).remove();
+  // await firebase.database().ref("hands").child(gameId).child(playerId).remove();
+  // await firebase.database().ref("users").child(playerId).child("game").remove();
+
+  await firebase.database().ref().update(updates);
 }
 
 export async function getGameById(gameId: string): Promise<IGameNode> {
@@ -108,19 +113,19 @@ export async function getGameByToken(token: string): Promise<firebase.database.D
     .once("value");
 }
 
-export async function updateGameState(
-  gameId: string,
-  changes: Partial<IGameState>
-) {
-  try {
-    await firebase
-      .database()
-      .ref("games")
-      .child(gameId)
-      .child("state")
-      .update(changes);
-  } catch (e) {
-    console.error(e);
-    // Do nothing
-  }
-}
+// export async function updateGameState(
+//   gameId: string,
+//   changes: Partial<IGameState>
+// ) {
+//   try {
+//     await firebase
+//       .database()
+//       .ref("games")
+//       .child(gameId)
+//       .child("state")
+//       .update(changes);
+//   } catch (e) {
+//     console.error(e);
+//     // Do nothing
+//   }
+// }

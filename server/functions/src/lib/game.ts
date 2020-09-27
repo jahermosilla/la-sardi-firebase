@@ -2,6 +2,7 @@ import { IGameNode, IGameQuantities } from "./interfaces/game";
 import { GameDirection } from "./enums/game-direction";
 
 import { GameStatus } from "./enums/game-status";
+import { uniqueId } from "lodash";
 
 export function getEmpty({
   owner,
@@ -14,12 +15,15 @@ export function getEmpty({
 }) : IGameNode {
   const createdAt = new Date().getTime();
 
+  const token = isPrivate ? uniqueId() : null;
+
   return {
     owner,
+    isPrivate,
+    token,
     status: GameStatus.NOT_STARTED,
     properties: {
       createdAt,
-      isPrivate,
       qtt
     },
     state: {
