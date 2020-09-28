@@ -1,5 +1,5 @@
 <template>
-    <div style="background: rgba(0, 0, 0, 0.25)" class="elevation-4 px-4 rounded game-row d-flex flex-grow-1 flex-row justify-space-between align-center">
+    <div style="background: rgba(0, 0, 0, 0.25); min-width: 95%;" class="elevation-4 px-4 rounded d-flex flex-grow-1 flex-row justify-space-between align-center">
         <!-- Dialog for changing card color (10) -->
         <change-color-dialog v-model="changeColorOpened" @submit="onChangeColor"></change-color-dialog>
         

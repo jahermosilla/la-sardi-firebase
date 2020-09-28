@@ -9,10 +9,13 @@
     <enemies :game-ref="gameRef" ref="enemies" />
 
     <!-- Table -->
-    <game-table :game-ref="gameRef" ref="gameTable" />
+    <!-- <game-table :game-ref="gameRef" ref="gameTable" /> -->
+    <transition name="scale-transition" mode="out-in">
+        <component :is="middleComponent" :game-ref="gameRef" ref="gameTable" />
+    </transition>
 
     <!-- Player -->
-    <player :game-id="gameId" :game-ref="gameRef">
+    <player v-if="playing" :game-id="gameId" :game-ref="gameRef">
         <template #player-actions="props">
             <player-actions v-bind="props" :direction="direction" />
         </template>
@@ -23,6 +26,7 @@
 
 <script>
 import GameTable from '@/components/game/table';
+import WaitingTable from '@/components/game/waiting';
 import Enemies from '@/components/game/enemies';
 import GameCard from '@/components/game/card';
 import Player from '@/components/game/player';
@@ -41,6 +45,7 @@ export default {
 
     components: {
         GameTable,
+        WaitingTable,
         Enemies,
         GameCard,
         Player,
@@ -103,11 +108,35 @@ export default {
 
     firebase() {
         return {
-            gameRef: firebase.database().ref(this.gameId),
+            gameRef: firebase.database().ref(`games/${this.gameId}`),
         }
     },
 
     computed: {
+        middleComponent() {
+            return this.notStarted
+                ? 'waiting-table'
+                : 'game-table'
+        },
+
+        notStarted() {
+            return this.gameRef
+                ? this.gameRef.status === 0
+                : true;
+        },
+
+        playing() {
+            return this.gameRef
+                ? this.gameRef.status === 1
+                : false;
+        },
+
+        finished() {
+            return this.gameRef
+                ? this.gameRef.status === 2
+                : false;
+        },
+
         containerStyle() {
             return {
                 background: this.$vuetify.theme.themes.light.primary
@@ -115,17 +144,18 @@ export default {
         },
 
         direction() {
-            if (!this.gameRef) {
-                return 0;
-            }
-
-            return this.gameRef.state.direction;
+            return this.gameRef
+                ? this.gameRef.state.direction
+                : 0;
         }
     }
 }
 </script>
 
 <style>
+    * {
+        overscroll-behavior: none;
+    }
     /* *::-webkit-scrollbar {
       display: none;
     } */

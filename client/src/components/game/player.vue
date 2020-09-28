@@ -56,7 +56,7 @@ export default {
         const playerId = firebase.auth().currentUser.uid;
 
         return {
-            handRef: firebase.database().ref(`hands/${this.gameId.replace('games/', '')}/${playerId}`)
+            handRef: firebase.database().ref(`hands/${this.gameId}/${playerId}`)
         }
     },
 

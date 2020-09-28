@@ -1,8 +1,5 @@
 <template>
     <div class="actions">
-        <v-btn icon v-show="imOwner && !gameStarted" @click="startGame">
-            <v-icon style="font-size: 1.9rem;">mdi-send</v-icon>
-        </v-btn>
         <v-btn :disabled="!myTurn" icon @click="pass">
             <v-icon style="font-size: 2.5rem;">{{directionIcon}}</v-icon>
         </v-btn>
@@ -19,11 +16,6 @@ export default {
         },
 
         myTurn: {
-            type: Boolean,
-            required: true
-        },
-
-        imOwner: {
             type: Boolean,
             required: true
         },
@@ -46,10 +38,6 @@ export default {
     },
 
     methods: {
-        async startGame() {
-            await db.startGame(this.gameRef['.key']);
-        },
-
         async pass() {
             await db.pass(this.gameRef['.key']);
         },

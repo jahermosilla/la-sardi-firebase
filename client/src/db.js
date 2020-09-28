@@ -40,16 +40,24 @@ export async function createGame(body) {
     return axios.post('/game', body);
 }
 
+export async function join(gameId, /* token */) {
+    return axios.post(`/game/${gameId}/join`);
+}
+
+export async function leave(gameId) {
+    return axios.post(`/game/${gameId}/leave`);
+}
+
+export async function startGame(gameId) {
+    return axios.post(`/game/${gameId}/start`);
+}
+
 export async function playCard(card, gameId) {
     return axios.post(`/player/game/${gameId}/card/play`, { card });
 }
 
 export async function pass(gameId) {
     return axios.post(`/player/game/${gameId}/pass`);
-}
-
-export async function startGame( gameId) {
-    return axios.post(`/game/${gameId}/start`);
 }
 
 export async function takeFromDeck(gameId) {

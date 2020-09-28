@@ -88,7 +88,7 @@ export default {
 
     mounted() {
         interact(this.$el).draggable({
-            onstart: (event) => {
+            onstart: (/*event*/) => {
                 this.isMoving = true;
             },
 
