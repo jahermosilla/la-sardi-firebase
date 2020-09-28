@@ -80,27 +80,23 @@ export async function takeFromDeck({
   game: IGameNode;
   hand: Array<ICard>;
 }) {
-  if (!deck || !deck.length) {
-    return;
-  }
-
   if (game.state.counts.acc) {
     let consumed = game.state.counts.acc;
 
-    while (consumed-- && deck.length) {
+    while (consumed-- && deck?.length) {
       hand.push(deck.pop() as ICard);
     }
 
     game.state.counts.acc = 0;
   } else {
-    hand.push(deck.pop() as ICard);
+    hand.push(deck?.pop() as ICard);
   }
 
   const updates = {
     [`hands/${gameId}/${userId}`]: hand,
     [`games/${gameId}/state/counts/acc`]: game.state.counts.acc,
     [`games/${gameId}/state/counts/cards/${userId}`]: hand.length,
-    [`games/${gameId}/state/counts/deck`]: deck.length,
+    [`games/${gameId}/state/counts/deck`]: deck?.length || 0,
     [`decks/${gameId}`]: deck,
   };
 

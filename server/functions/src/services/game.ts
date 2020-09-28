@@ -30,7 +30,7 @@ export async function create({
 
   await firebase.database().ref().update(updates);
 
-  return gameKey;
+  return key as string;
 }
 
 export async function start(gameId: string, { game, deck }: { game: IGameNode, deck: Array<ICard> }) {

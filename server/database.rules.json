@@ -11,6 +11,9 @@
           ".read": "$userId === auth.uid"
         }
       }
+    },
+    "users": {
+      ".read": true
     }
   }
 }

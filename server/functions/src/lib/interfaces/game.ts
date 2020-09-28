@@ -31,11 +31,11 @@ export declare interface IDeckNode {
 };
 
 /**
- * Strcuture of "player" record in players node
+ * Strcuture of "user" record in users node
  */
-export declare interface IPlayerNode {
+export declare interface IUserNode {
     [key: string]: {
-        game: string,
+        game?: string | null,
         photoURL: string,
         name: string,
         rank: {

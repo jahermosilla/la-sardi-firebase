@@ -1,9 +1,9 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
-import { GameStatus } from "../lib/enums/game-status";
+import { GameStatus } from "../../lib/enums/game-status";
 
-export const onePlayerLeft = functions.database.ref('games/$gameId/players/').onUpdate(async (snapshot, context) => {
+export const onePlayerLeft = functions.database.ref('games/{gameId}/players/').onUpdate(async (snapshot, context) => {
     let allPlayers = 0;
     let playersEnd = 0;
     snapshot.after.forEach(child =>{
@@ -25,7 +25,7 @@ export const onePlayerLeft = functions.database.ref('games/$gameId/players/').on
     }
 });
 
-export const allPlayersPass = functions.database.ref('/games/${gameId}/pass').onUpdate(async (snapshot, context) => {
+export const allPlayersPass = functions.database.ref('/games/{gameId}/pass').onUpdate(async (snapshot, context) => {
     let allPlayers = 0;
     let playersPass = 0;
     snapshot.after.forEach(child => {

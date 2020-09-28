@@ -15,6 +15,12 @@
   "storage": {
     "rules": "storage.rules"
   },
+  "emulators": {
+    "functions": {
+      "host": "localhost",
+      "port": 5002
+    }
+  },
   "hosting": {
     "public": "public",
     "server": "server",

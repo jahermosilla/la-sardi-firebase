@@ -31,4 +31,5 @@ app.use(errors.notFound);
 app.use(errors.errorHandler);
 
 export const server = functions.https.onRequest(app);
-export { onePlayerLeft, allPlayersPass } from "./listeners/game-end";
+export { onePlayerLeft, allPlayersPass } from "./listeners/database/game-end";
+export { default as onUserCreated  } from "./listeners/auth/user-created";
