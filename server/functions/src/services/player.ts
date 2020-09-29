@@ -4,16 +4,31 @@ import { ICard, IGameActionOptions, IGameNode, IGameState } from "../lib/interfa
 import { getGameById } from "./game";
 import Card from '../lib/card';
 
-export async function playCard(card: ICard, { gameId, userId, game, hand }: { gameId: string, userId: string, game: IGameNode, hand: Array<ICard> }) {
-  const state : IGameState = {
+export async function playCard(
+  card: ICard,
+  {
+    gameId,
+    userId,
+    game,
+    hand,
+    deck,
+  }: {
+    gameId: string;
+    userId: string;
+    game: IGameNode;
+    hand: Array<ICard>;
+    deck: Array<ICard>;
+  }
+) {
+  const state: IGameState = {
     ...game.state,
-    playedCard: card
+    playedCard: card,
   };
-  const updates : any = {
+  const updates: any = {
     [`games/${gameId}/state/playedCard`]: card,
   };
 
-  if ([1, 2].indexOf(card.value) >= 0) {
+  if ([1, 2].indexOf(card.value) >= 0 && (deck || []).length > 0) {
     const delta = card.value === 1 ? 6 : 2;
     const acc = game.state.counts.acc + delta;
     updates[`games/${gameId}/state/counts/acc`] = acc;
@@ -21,14 +36,18 @@ export async function playCard(card: ICard, { gameId, userId, game, hand }: { ga
   }
 
   if (card.value === 12) {
-    const direction = game.state.direction === GameDirection.Clockwise
+    const direction =
+      game.state.direction === GameDirection.Clockwise
         ? GameDirection.Counterclockwise
         : GameDirection.Clockwise;
     updates[`games/${gameId}/state/direction`] = direction;
     state.direction = direction;
   }
 
-  const playersLeft = Object.values(game.players).reduce((res, val) => res + (+!val), 0);
+  const playersLeft = Object.values(game.players).reduce(
+    (res, val) => res + +!val,
+    0
+  );
 
   if ([3, 7].indexOf(card.value) < 0) {
     let turns =
@@ -40,11 +59,10 @@ export async function playCard(card: ICard, { gameId, userId, game, hand }: { ga
   }
 
   // Update hand
-  const cardIndex: number = hand
-    .findIndex(other => Card.equals(card, other));
+  const cardIndex: number = hand.findIndex((other) => Card.equals(card, other));
 
   hand.splice(cardIndex, 1);
-  
+
   updates[`hands/${gameId}/${userId}`] = hand;
 
   // Update player counts

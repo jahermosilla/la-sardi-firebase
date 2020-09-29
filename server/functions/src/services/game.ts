@@ -69,10 +69,7 @@ export async function start(gameId: string, { game, deck }: { game: IGameNode, d
   await firebase.database().ref().update(updates);
 }
 
-export async function join(playerId: string, token: string) {
-  const snapshot = await getGameByToken(token);
-  const gameId = snapshot.key;
-
+export async function join(playerId: string, gameId: string) {
   const gameKey = `games/${gameId}/players/${playerId}`;
   const userKey = `users/${playerId}/game`;
 
@@ -110,6 +107,7 @@ export async function getGameByToken(token: string): Promise<firebase.database.D
     .ref("games")
     .orderByChild("token")
     .equalTo(token)
+    .limitToFirst(1)
     .once("value");
 }
 

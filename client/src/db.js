@@ -22,9 +22,9 @@ export const db = firebase
 // const { Timestamp, GeoPoint } = firebase.firestore
 // export { Timestamp, GeoPoint }
 
-// export const SERVER_URL =
-//     "https://us-central1-la-sardi-acd1a.cloudfunctions.net/server";
-export const SERVER_URL = "http://localhost:5001/la-sardi-acd1a/us-central1/server";
+export const SERVER_URL =
+    "https://us-central1-la-sardi-acd1a.cloudfunctions.net/server";
+// export const SERVER_URL = "http://localhost:5001/la-sardi-acd1a/us-central1/server";
 
 axios.defaults.baseURL = SERVER_URL;
 
@@ -40,8 +40,8 @@ export async function createGame(body) {
     return axios.post('/game', body);
 }
 
-export async function join(gameId, /* token */) {
-    return axios.post(`/game/${gameId}/join`);
+export async function join(token) {
+    return axios.post(`/game/private/join`, { token });
 }
 
 export async function leave(gameId) {

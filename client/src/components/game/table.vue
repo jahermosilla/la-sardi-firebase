@@ -24,7 +24,7 @@
 
         <div v-if="acc > 0" class="d-flex flex-column align-center">
             <div class="white--text boing">
-                <v-icon color="accent">keyboard_arrow_down</v-icon>
+                <v-icon color="accent">mdi-arrow-down</v-icon>
             </div>
             <v-btn color="green darken-4" dark fab>{{acc}}</v-btn>
         </div>

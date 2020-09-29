@@ -7,6 +7,9 @@ import checkIfOwner from '../middlewares/check-if-owner';
 import checkIfPlaying from '../middlewares/check-if-playing';
 import checkGameStatus from "../middlewares/check-game-status";
 import checkPlayersNumber from "../middlewares/check-players-number";
+import checkMaxPlayersNumber from '../middlewares/check-max-players-number';
+import findGameByToken from '../middlewares/find-game-by-token';
+import checkPlayerAlreadyInGame from '../middlewares/check-player-already-in-game';
 
 import setRequestData, { RequestData } from "../lib/helpers";
 import { ICard, IGameNode } from "../lib/interfaces/game";
@@ -18,19 +21,30 @@ const router = Router();
 router.use(authorizationMiddleware);
 
 router
-  .post("/game",
+  .post("/game", setRequestData(RequestData.PLAYERGAME), checkIfPlaying, create)
+  .post(
+    "/game/private/join",
     setRequestData(RequestData.PLAYERGAME),
     checkIfPlaying,
-    create
+    findGameByToken,
+    setRequestData(RequestData.GAMESTATUS),
+    checkGameStatus,
+    checkPlayerAlreadyInGame,
+    checkMaxPlayersNumber,
+    join
   )
-  .post("/game/:gameId/join",
+  .post(
+    "/game/:gameId/join",
     setRequestData(RequestData.PLAYERGAME),
     checkIfPlaying,
     setRequestData(RequestData.GAMESTATUS),
     checkGameStatus,
+    checkPlayerAlreadyInGame,
+    checkMaxPlayersNumber,
     join
   )
-  .post("/game/:gameId/start",
+  .post(
+    "/game/:gameId/start",
     setRequestData(RequestData.GAME),
     checkIfOwner,
     checkPlayersNumber,
@@ -55,11 +69,11 @@ async function create(req: Request, res: Response, next: NextFunction) {
 async function join(req: Request, res: Response, next: NextFunction) {
   try {
     const playerId = ((req as any).user as firebase.auth.DecodedIdToken).uid;
-    const { token } = req.body;
+    const { gameId } = req.body;
 
-    await service.join(playerId, token);
+    await service.join(playerId, gameId);
 
-    res.json({ ok: true });
+    res.json({ key: gameId });
   } catch (error) {
     next(error);
   }

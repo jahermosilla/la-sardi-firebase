@@ -2,7 +2,7 @@ import { IGameNode, IGameQuantities } from "./interfaces/game";
 import { GameDirection } from "./enums/game-direction";
 
 import { GameStatus } from "./enums/game-status";
-import { uniqueId } from "lodash";
+import randomString from 'randomstring';
 
 export function getEmpty({
   owner,
@@ -15,7 +15,11 @@ export function getEmpty({
 }) : IGameNode {
   const createdAt = new Date().getTime();
 
-  const token = isPrivate ? uniqueId() : null;
+  const token = isPrivate ? randomString.generate({
+    length: 6,
+    charset: 'utf-8',
+    readable: true
+  }) : null;
 
   return {
     owner,

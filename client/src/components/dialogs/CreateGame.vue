@@ -32,7 +32,7 @@
     <v-card-actions>
       <v-checkbox
         v-model="isPrivate"
-        :disabled="isLoading"
+        :disabled="true"
         label="Partida privada"
         class="ma-0"
         hide-details />
@@ -63,7 +63,7 @@ export default {
             decksQtt: 1,
             dealedCardsQtt: 3,
 
-            isPrivate: false,
+            isPrivate: true,
 
             isLoading: false
         }
@@ -82,7 +82,7 @@ export default {
                 };
 
                 const { data: { key: gameId } } = await db.createGame({ isPrivate, qtt });
-                this.$router.push({ name: 'Game', params: { gameId } })
+                this.$router.push({ name: 'Game', params: { gameId } });
             } catch (error) {
                 // Do nothing
             } finally {

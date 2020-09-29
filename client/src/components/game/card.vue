@@ -88,7 +88,17 @@ export default {
 
     mounted() {
         interact(this.$el).draggable({
+            startAxis: 'y',
             onstart: (/*event*/) => {
+                // this.moveCardPosition = {
+                //     x: this.$el.getBoundingClientRect().left,
+                //     y: this.$el.getBoundingClientRect().top
+                // }
+                this.moveCardPosition = {
+                    x: 0,
+                    y: -this.targetHeight
+                };
+
                 this.isMoving = true;
             },
 
@@ -175,6 +185,7 @@ export default {
     position: relative;
     touch-action: none;
     user-select: none;
+    z-index: 1000;
 }
 
 .card-flipped .game-card {

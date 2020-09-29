@@ -23,6 +23,7 @@ router
     setRequestData(RequestData.GAME),
     checkPlayerTurn,
     canPlayCard,
+    setRequestData(RequestData.DECK),
     playCard
   )
   .post(
@@ -51,10 +52,11 @@ async function playCard(req: Request, res: Response, next: NextFunction) {
     const data: Map<RequestData, any> = (req as any).data;
     const game: IGameNode = data.get(RequestData.GAME);
     const hand: Array<ICard> = data.get(RequestData.HAND);
+    const deck: Array<ICard> = data.get(RequestData.DECK);
 
     const userId = ((req as any).user as firebase.auth.DecodedIdToken).uid;
 
-    await service.playCard(card, { gameId, userId, game, hand });
+    await service.playCard(card, { gameId, userId, game, hand, deck });
 
     res.json({ ok: true });
   } catch (error) {

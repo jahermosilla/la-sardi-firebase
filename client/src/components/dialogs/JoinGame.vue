@@ -5,7 +5,7 @@
     <v-card-text style="height: 300px;" class="py-2">
       <v-form :disabled="isLoading">
         <v-text-field
-            v-model="gameId"
+            v-model="token"
             label="Código de la partida"
             autofocus
             outlined
@@ -21,7 +21,7 @@
         @click="joinGame"
         text
         color="primary"
-        :disabled="!gameId"
+        :disabled="!token"
         :loading="isLoading"
       >UNIRSE</v-btn>
     </v-card-actions>
@@ -29,20 +29,29 @@
 </template>
 
 <script>
+import * as db from '@/db';
+
 export default {
     data() {
         return {
-            gameId: null,
+            token: null,
 
             isLoading: false
         }
     },
 
     methods: {
-        joinGame() {
-            // TODO: call service
+        async joinGame() {
             this.isLoading = true;
-            setTimeout(() => this.isLoading = false, 2000);
+            try {
+                const { data: { key: gameId } } = await db.join(this.token);
+                this.$router.push({ name: 'Game', params: { gameId } })
+            } catch (error) {
+                // TODO SHOW ERROR
+                console.error(error);              
+            } finally {
+                this.isLoading = false;
+            }
         }
     },
 
