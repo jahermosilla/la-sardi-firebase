@@ -1,8 +1,8 @@
 <template>
-  <v-container fluid class="py-0 fill-height d-flex flex-column" :style="containerStyle">
+  <v-container fluid class="py-0 px-0 fill-height d-flex flex-column" :style="containerStyle">
     <!-- Animated Card -->
     <transition @after-enter="animatedCard = null" name="move-card">
-        <game-card v-if="!!animatedCard" v-bind="animatedCard" class="animated-card"></game-card>
+        <game-card v-if="!!animatedCard" v-bind="animatedCard" class="animated-card" />
     </transition>
 
     <!-- Enemies -->
@@ -14,10 +14,22 @@
         <component :is="middleComponent" :game-ref="gameRef" ref="gameTable" />
     </transition>
 
+
+    <!-- Player Card -->
+    <game-card class="player-card" v-show="showCard" v-bind="playerCard" :style="playerCardStyle"/>
+
+
     <!-- Player -->
-    <player v-if="playing" :game-id="gameId" :game-ref="gameRef">
+    <player
+        v-if="playing"
+        :game-id="gameId"
+        :game-ref="gameRef"
+        @onstart="onCardMoveStart"
+        @onmove="onCardMove"
+        @onend="onCardMoveEnd"
+    >
         <template #player-actions="props">
-            <player-actions v-bind="props" :direction="direction" />
+            <player-actions class="px-1" v-bind="props" :direction="direction" />
         </template>
     </player>
       
@@ -34,6 +46,11 @@ import PlayerActions from '@/components/game/player-actions';
 
 import firebase from 'firebase/app';
 import 'firebase/database';
+
+const fakeCard = {
+    color: 'NONE',
+    value: 2
+};
 
 export default {
     props: {
@@ -56,22 +73,41 @@ export default {
         return {
             gameRef: null,
             handRef: [],
-            animatedCard: null
+            animatedCard: null,
+            playerCard: fakeCard,
+            showCard: false,
+            playerCardPosition: {
+                x: 0,
+                y: 0,
+                dx: 0,
+                dy: 0
+            }
         }
     },
 
-    // mounted() {
-    //     setInterval(() => {
-    //         const card = {
-    //             color: 'NONE',
-    //             value: 2
-    //         }
-
-    //         this.drawCardFromPlayerToTable(card, 2)
-    //     }, 500);
-    // },
-
     methods: {
+        onCardMoveStart({ card, event }) {
+            const { x, y } = event.target.getBoundingClientRect();
+            const { dx, dy } = event;
+            this.playerCard = card;
+            this.playerCardPosition.x = x;
+            this.playerCardPosition.y = y;
+            this.playerCardPosition.dx = dx;
+            this.playerCardPosition.dy = dy;
+            this.showCard = true;
+        },
+
+        onCardMove({ event }) {
+            const { dx, dy } = event;
+            this.playerCardPosition.dx += dx;
+            this.playerCardPosition.dy += dy;     
+        },
+
+        onCardMoveEnd() {
+            this.playerCard = fakeCard;
+            this.showCard = false;
+        },
+
         animateCard(card, from, to) {
             const startX = from.getBoundingClientRect().left;
             const startY = from.getBoundingClientRect().top;
@@ -117,6 +153,16 @@ export default {
             return this.notStarted
                 ? 'waiting-table'
                 : 'game-table'
+        },
+
+        playerCardStyle() {
+            const { x, y, dx, dy } = this.playerCardPosition;
+            return {
+                position: 'absolute',
+                left: `${x}px`,
+                top: `${y}px`,
+                transform: `translate3D(${dx}px, ${dy}px, 0) !important`
+            };
         },
 
         notStarted() {
@@ -183,6 +229,10 @@ export default {
         --animated-card-dy: 0;
         --animated-card-top: 0;
         --animated-card-left: 0;
+    }
+
+    .player-card {
+        z-index: 2;
     }
 
     .animated-card {

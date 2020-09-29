@@ -1,5 +1,6 @@
 <template>
-      <div class="game-card" :data-app="dataApp" :style="{ transform: moveCardStyle, position: isMoving ? 'absolute' : 'initial' }">
+        <!-- :style="{ transform: moveCardStyle, position: isMoving ? 'fixed' : 'initial' }" -->
+      <div class="game-card" :data-app="dataApp">
         <div :style="style">
             <vue-global-events target="window" @resize="onResize"></vue-global-events>
         </div>
@@ -11,8 +12,6 @@
 <script>
 import deckPath from '@/assets/deck.png';
 import VueGlobalEvents from 'vue-global-events';
-
-import interact from 'interactjs';
 
 const CARD_WIDTH = 208;
 const CARD_HEIGHT = 319;
@@ -85,49 +84,10 @@ export default {
             }
         }
     },
-
-    mounted() {
-        interact(this.$el).draggable({
-            startAxis: 'y',
-            onstart: (/*event*/) => {
-                // this.moveCardPosition = {
-                //     x: this.$el.getBoundingClientRect().left,
-                //     y: this.$el.getBoundingClientRect().top
-                // }
-                this.moveCardPosition = {
-                    x: 0,
-                    y: -this.targetHeight
-                };
-
-                this.isMoving = true;
-            },
-
-            onmove: (event) => {
-                this.moveCardPosition = {
-                    x: this.moveCardPosition.x + event.dx,
-                    y: this.moveCardPosition.y + event.dy,
-                }
-            },
-            onend: () => {
-                this.isMoving = false;
-                this.moveCardPosition.x = 0;
-                this.moveCardPosition.y = 0;
-            }
-        });
-    },
-
-    beforeDestroy() {
-        interact(this.$el).unset();
-    },
-
+    
     computed: {
         dataApp() {
             return JSON.stringify(this.$props);
-        },
-
-        moveCardStyle() {
-            const { x, y } = this.moveCardPosition;
-            return `translate3D(${x}px, ${y}px, 0) !important`;
         },
 
         positionBack() {
@@ -185,7 +145,6 @@ export default {
     position: relative;
     touch-action: none;
     user-select: none;
-    z-index: 1000;
 }
 
 .card-flipped .game-card {
