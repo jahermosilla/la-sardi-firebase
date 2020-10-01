@@ -57,6 +57,7 @@ import firebase from 'firebase/app';
 import 'firebase/auth';
 
 import { shuffle, sampleSize } from "lodash";
+import { COLORS } from "@/constants";
 
 export default {
   name: 'Home',
@@ -87,7 +88,7 @@ export default {
   created() {
     this.user = firebase.auth().currentUser;
     
-    const deck = ['OROS', 'COPAS', 'ESPADAS', 'BASTOS']
+    const deck = COLORS
       .map(color => Array.from({ length: 12 }).map((_, i) => ({ color, value: i + 1 })))
       .reduce((a, b) => a.concat(b));
 

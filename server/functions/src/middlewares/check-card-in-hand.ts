@@ -14,8 +14,9 @@ export default async function (
 
   
   const { card }: { card: ICard } = req.body;
-  const cardIndex = hand
-    .findIndex((other) => Card.equals(card, other));
+  const cardIndex = card.value === 10 
+    ? hand.findIndex((other) => other.value === 10)
+    : hand.findIndex((other) => Card.equals(card, other));
   
   if (cardIndex < 0) {
     return next(createError(400, "You cant play a card you dont own"));

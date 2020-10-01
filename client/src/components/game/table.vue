@@ -8,8 +8,14 @@
             style="position: relative;"
             :style="{ pointerEvents: myTurn ? 'auto' : 'none' }"
             :class="{ 'deck-deal': showDeckAnimation }"
+            @animationend="showDeckAnimation = false"
         >
-            <game-card :disabled="!myTurn" :value="2" color="NONE" style="cursor: pointer; position: relative;" />
+            <game-card
+                :disabled="!myTurn || acc > 0"
+                :value="2"
+                color="NONE"
+                style="cursor: pointer; position: relative;"
+            />
             <div class="white--text headline deck-size--text">{{deckSize}}</div>
         </div>
 
@@ -27,7 +33,7 @@
             <div class="white--text boing">
                 <v-icon color="accent">mdi-arrow-down</v-icon>
             </div>
-            <v-btn color="green darken-4" dark fab>{{acc}}</v-btn>
+            <v-btn @click="takeFromDeck" color="green darken-4" dark fab>{{acc}}</v-btn>
         </div>
         <div v-else></div>
     </div>
@@ -98,7 +104,12 @@ export default {
         },
 
         async takeFromDeck() {
-            await db.takeFromDeck(this.gameRef['.key']);
+            try {
+                await db.takeFromDeck(this.gameRef['.key']);
+                this.showDeckAnimation = true;
+            } catch {
+                // Do nothing
+            }
         }
     },
 
@@ -142,7 +153,7 @@ export default {
 .deck-deal {
     animation: deck-deal-animation;
     animation-duration: 0.5s;
-    animation-iteration-count: infinite;
+    animation-iteration-count: 1;
     animation-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
 }
 

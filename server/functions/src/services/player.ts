@@ -1,8 +1,8 @@
 import firebase from 'firebase-admin';
+import Card from '../lib/card';
 import { GameDirection } from "../lib/enums/game-direction";
 import { ICard, IGameActionOptions, IGameNode, IGameState } from "../lib/interfaces/game";
 import { getGameById } from "./game";
-import Card from '../lib/card';
 
 export async function playCard(
   card: ICard,
@@ -59,7 +59,9 @@ export async function playCard(
   }
 
   // Update hand
-  const cardIndex: number = hand.findIndex((other) => Card.equals(card, other));
+  const cardIndex: number = card.value === 10
+    ? hand.findIndex((other) => other.value === 10)
+    : hand.findIndex((other) => Card.equals(card, other));
 
   hand.splice(cardIndex, 1);
 

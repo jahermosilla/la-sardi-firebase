@@ -4,15 +4,17 @@
           <v-card-title>
               Cambiar palo
           </v-card-title>
-          <v-card-text style="max-height: 50vh;" class="d-flex align-center px-4 py-2">
+          <v-card-text
+            style="max-height: 50vh; overflow-x: scroll;"
+            class="d-flex align-center px-4 py-2"
+          >
               <game-card
                 class="change-color-card d-inline-block mx-1"
-                :class="{ selected: card.color === color }"
                 @click.native="color = card.color"
-                :disabled="false"
+                :disabled="card.color === color"
                 v-for="card in cards"
                 v-bind="card"
-                :key="card.color"></game-card>
+                :key="card.color" />
           </v-card-text>
 
           <v-card-actions color="primary">
@@ -25,6 +27,7 @@
 
 <script>
 import GameCard from '@/components/game/card';
+import { COLORS } from "@/constants";
 
 export default {
     inheritAttrs: false,
@@ -36,10 +39,15 @@ export default {
         }
     },
 
+    created() {
+        // Reset last value
+        this.color = null;
+    },
+
     data() {
         return {
             color: null,
-            cards: ['OROS', 'COPAS', 'ESPADAS', 'BASTOS'].map(color => ({ value: 10, color }))
+            cards: COLORS.map(color => ({ value: 10, color }))
         }
     },
 

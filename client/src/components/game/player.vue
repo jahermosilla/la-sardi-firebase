@@ -8,20 +8,28 @@
         <div
             v-sardi-draggable="{
                 inertia: true,
+                autoScroll: true,
                 startAxis: 'x',
-                onmove: onListScrollMove
+                onstart: onListScrollMoveStart,
+                onmove: onListScrollMove,
+                onend: onListScrollMoveEnd
             }"
             ref="scrollWrapper"
-            style="overflow: hidden;"
+            style="overflow: hidden; touch-action: none;"
             class="flex-grow-1"
         >
-            <transition-group @after-enter="onResize" ref="scrollChild" :style="scrollStyle" style="white-space: nowrap; width: fit-content;" name="list" tag="ul" mode="in-out">
-                <li style="list-decoration: none; display: inline-flex;" v-for="(card, i) in handOrdered" :key="`${card.value}${card.color}${i}`">
+            <transition-group @after-enter="onResize" ref="scrollChild" class="mx-auto" :style="scrollStyle" style="white-space: nowrap; width: fit-content;" name="list" tag="ul" mode="out-in">
+                <li
+                    style="list-decoration: none; display: inline-flex;"
+                    v-for="(card, i) in handOrdered"
+                    :key="`${card.value}${card.color}${i}`"
+                    :style="{ transitionDelay: `${0.05 * i}s` }"
+                >
                     <game-card
                         v-bind="card"
                         :with-back="false"
                         class="mx-1"
-                        :disabled="!myTurn || !isCardPlayable(card)"
+                        :disabled="isMovingCard || !myTurn || !isCardPlayable(card)"
                         :class="{ handle: myTurn && isCardPlayable(card) }"
                         v-sardi-draggable="{
                             enabled: myTurn && isCardPlayable(card),
@@ -44,6 +52,7 @@ import GameCard from '@/components/game/card';
 import firebase from 'firebase/app';
 import 'firebase/database';
 import 'firebase/auth';
+import { COLORS } from "@/constants";
 
 export default {
     components: {
@@ -66,7 +75,8 @@ export default {
             handRef: [],
             selectedOrder: 'P',
             scrollPositionX: 0,
-            wrap: false
+            isMoving: false,
+            isMovingCard: false
         }
     },
 
@@ -80,13 +90,14 @@ export default {
 
     computed: {
         scrollStyle() {
+            console.log(this.isMoving);
             return {
-                transform: `translateX(${this.scrollPositionX}px)`
+                transform: `translateX(${this.scrollPositionX}px)`,
+                transition: this.isMoving ? 'none' : '.3s cubic-bezier(.25,.8,.5,1)'
             }
         },
 
         handOrdered() {            
-            const colorOrder = ['OROS', 'COPAS', 'ESPADAS', 'BASTOS'];
             if (this.selectedOrder === 'V') {
                 return this.handRef.slice().sort((a, b) => a.value - b.value);
             }
@@ -96,7 +107,7 @@ export default {
                     return a.value - b.value;
                 }
 
-                return colorOrder.indexOf(a.color) - colorOrder.indexOf(b.color)
+                return COLORS.indexOf(a.color) - COLORS.indexOf(b.color)
             });
         },
 
@@ -119,48 +130,58 @@ export default {
 
     methods: {
         async onResize() {
-            await this.$nextTick();
-            const parentWidth = +getComputedStyle(this.$refs.scrollWrapper).width.replace('px', '');
-            const totalWidth = +getComputedStyle(this.$refs.scrollChild.$el).width.replace('px', '');
+            // await this.$nextTick();
+            // const parentWidth = +getComputedStyle(this.$refs.scrollWrapper).width.replace('px', '');
+            // const totalWidth = +getComputedStyle(this.$refs.scrollChild.$el).width.replace('px', '');
 
-            if (totalWidth <= parentWidth) {
-                this.scrollPositionX = (parentWidth - totalWidth) / 2;
-            }
+            // if (totalWidth <= parentWidth) {
+            //     this.scrollPositionX = (parentWidth - totalWidth) / 2;
+            // }
         },
 
-        onListScrollMove(event) {
+        onListScrollMoveStart() {
+            console.log('started scroll', this)
+            this.isMoving = true;
+        },
+
+        onListScrollMoveEnd() {
             const parentWidth = +getComputedStyle(this.$refs.scrollWrapper).width.replace('px', '');
             const totalWidth = +getComputedStyle(this.$refs.scrollChild.$el).width.replace('px', '');
 
-            console.log(parentWidth, totalWidth);
 
-            if (totalWidth <= parentWidth) {
-                return this.scrollPositionX = (parentWidth - totalWidth) / 2;
-            }
+            this.isMoving = false;
 
-            if (Math.sign(event.dx) === 1 && 
-                (this.scrollPositionX + event.dx) > 0) 
-            {
+            if (totalWidth < parentWidth) {
                 return this.scrollPositionX = 0;
             }
 
-            if (Math.sign(event.dx) === -1 &&
-                Math.abs(this.scrollPositionX + event.dx) > (totalWidth - parentWidth))
-            {
-                return this.scrollPositionX = -(totalWidth - parentWidth);
+            
+            if (this.scrollPositionX < -(totalWidth - parentWidth)) {
+                this.scrollPositionX = -(totalWidth - parentWidth);
             }
 
+            if (this.scrollPositionX > 0) {
+                this.scrollPositionX = 0;
+            }
+
+
+        },
+
+
+        onListScrollMove(event) {
             this.scrollPositionX += event.dx;
         },
 
         onstart(card) {
             return (event) => {
+                this.isMovingCard = true;
                 this.$emit('onstart', { card, event });
             }
         },
 
         onend(card) {
             return (event) => {
+                this.isMovingCard = false;
                 this.$emit('onend', { card, event });
             }
         },
@@ -205,9 +226,11 @@ export default {
 .list-enter-active, .list-leave-active {
   transition: all 0.8s;
 }
+
 .list-enter, .list-leave-to /* .list-leave-active below version 2.1.8 */ {
   opacity: 0;
   width: 0px;
-  transform: translate(-100px, 100px);
+  transform: translate(-1000px, 1000px);
+  visibility: hidden;
 }
 </style>

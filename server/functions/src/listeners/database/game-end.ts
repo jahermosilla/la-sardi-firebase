@@ -17,6 +17,8 @@ export const onePlayerLeft = functions.database.ref('games/{gameId}/players/').o
         }
     });
 
+    functions.logger.log(allPlayers, playersEnd, 'END');
+
     if (allPlayers - playersEnd <= 1) {
         const { gameId } = context.params;
         const updates: Partial<IGameNode> = {

@@ -12,6 +12,7 @@
 <script>
 import deckPath from '@/assets/deck.png';
 import VueGlobalEvents from 'vue-global-events';
+import { COLORS_WITH_NONE } from "@/constants";
 
 const CARD_WIDTH = 208;
 const CARD_HEIGHT = 319;
@@ -92,7 +93,7 @@ export default {
 
         positionBack() {
             const dx = 1;
-            const dy = ['OROS', 'COPAS', 'ESPADAS', 'BASTOS', 'NONE'].reverse().indexOf('NONE');
+            const dy = COLORS_WITH_NONE.slice().reverse().indexOf('NONE');
 
             const w = (this.targetWidth * 12) - (this.targetWidth * dx);
             const h = (this.targetHeight * dy) + this.targetHeight;
@@ -102,7 +103,7 @@ export default {
 
         position() {
             const dx = this.value - 1;
-            const dy = ['OROS', 'COPAS', 'ESPADAS', 'BASTOS', 'NONE'].reverse().indexOf(this.color);
+            const dy = COLORS_WITH_NONE.slice().reverse().indexOf(this.color);
 
             const w = (this.targetWidth * 12) - (this.targetWidth * dx);
             const h = (this.targetHeight * dy) + this.targetHeight;

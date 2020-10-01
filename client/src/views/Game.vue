@@ -14,10 +14,8 @@
         <component :is="middleComponent" :game-ref="gameRef" ref="gameTable" />
     </transition>
 
-
     <!-- Player Card -->
     <game-card class="player-card" v-show="showCard" v-bind="playerCard" :style="playerCardStyle"/>
-
 
     <!-- Player -->
     <player
