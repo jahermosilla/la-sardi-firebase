@@ -11,6 +11,8 @@ import * as service from '../services/player';
 import { NextFunction, Request, Response, Router } from "express";
 import { ICard, IGameNode } from "../lib/interfaces/game";
 import setRequestData, { RequestData } from "../lib/helpers";
+import checkGameStatus from '../middlewares/check-game-status';
+import { GameStatus } from '../lib/enums/game-status';
 
 const router = Router();
 
@@ -18,29 +20,42 @@ router
   .use(authorizationMiddleware)
   .post(
     "/player/game/:gameId/card/play",
-    setRequestData(RequestData.HAND),
+    setRequestData(
+      RequestData.HAND,
+      RequestData.GAME,
+      RequestData.DECK,
+      RequestData.GAMESTATUS
+    ),
+    checkGameStatus(GameStatus.PLAYING),
     checkCardInHand,
-    setRequestData(RequestData.GAME),
     checkPlayerTurn,
     canPlayCard,
-    setRequestData(RequestData.DECK),
     playCard
   )
   .post(
     "/player/game/:gameId/pass",
-    setRequestData(RequestData.GAME),
+    // eslint-disable-next-line
+    setRequestData(
+      RequestData.GAME,
+      RequestData.DECK,
+      RequestData.GAMESTATUS
+    ),
+    checkGameStatus(GameStatus.PLAYING),
     checkPlayerTurn,
-    setRequestData(RequestData.DECK),
     checkDeckEmpty(true),
     pass
   )
   .post(
     "/player/game/:gameId/deck/take",
-    setRequestData(RequestData.GAME),
+    setRequestData(
+      RequestData.GAME,
+      RequestData.DECK,
+      RequestData.HAND,
+      RequestData.GAMESTATUS
+    ),
+    checkGameStatus(GameStatus.PLAYING),
     checkPlayerTurn,
-    setRequestData(RequestData.DECK),
     checkDeckEmpty(false),
-    setRequestData(RequestData.HAND),
     takeFromDeck
   );
 

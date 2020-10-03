@@ -3,7 +3,7 @@ import { GameStatus } from "../lib/enums/game-status";
 import { RequestData } from "../lib/helpers";
 import createError from "http-errors";
 
-export default async function (
+export default (expectedStatus: GameStatus) => async function (
   req: Request,
   res: Response,
   next: NextFunction
@@ -13,9 +13,9 @@ export default async function (
 
   console.log(status, data);
 
-  if (status !== GameStatus.NOT_STARTED) {
+  if (status !== expectedStatus) {
     return next(
-      createError(400, "You cant join a game whose status is playing or finished")
+      createError(400, "Game status is not valid for the operation")
     );
   }
 

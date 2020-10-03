@@ -50,7 +50,7 @@ export async function playCard(
   );
 
   if ([3, 7].indexOf(card.value) < 0) {
-    let turns =
+    const turns =
       card.value === 11 || (card.value === 12 && playersLeft <= 2) ? 2 : 1;
 
     const newGame = { ...game, state };

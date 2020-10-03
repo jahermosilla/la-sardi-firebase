@@ -1,5 +1,5 @@
 <template>
-    <div v-resize="onResize" class="card-list pt-2 game-row d-flex flex-row justify-space-between">
+    <div class="card-list pt-2 game-row d-flex flex-row justify-space-between">
         <div class="actions px-1">
             <v-btn @click="selectedOrder = 'P'" icon class="white--text headline" :color="selectedOrder === 'P' ? 'green' : 'none'">P</v-btn>
             <v-btn @click="selectedOrder = 'V'" icon class="white--text headline" :color="selectedOrder === 'V' ? 'green' : 'none'">V</v-btn>
@@ -18,7 +18,7 @@
             style="overflow: hidden; touch-action: none;"
             class="flex-grow-1"
         >
-            <transition-group @after-enter="onResize" ref="scrollChild" class="mx-auto" :style="scrollStyle" style="white-space: nowrap; width: fit-content;" name="list" tag="ul" mode="out-in">
+            <transition-group ref="scrollChild" class="mx-auto" :style="scrollStyle" style="white-space: nowrap; width: fit-content;" name="list" tag="ul" mode="out-in">
                 <li
                     style="list-decoration: none; display: inline-flex;"
                     v-for="(card, i) in handOrdered"
@@ -129,16 +129,6 @@ export default {
     },
 
     methods: {
-        async onResize() {
-            // await this.$nextTick();
-            // const parentWidth = +getComputedStyle(this.$refs.scrollWrapper).width.replace('px', '');
-            // const totalWidth = +getComputedStyle(this.$refs.scrollChild.$el).width.replace('px', '');
-
-            // if (totalWidth <= parentWidth) {
-            //     this.scrollPositionX = (parentWidth - totalWidth) / 2;
-            // }
-        },
-
         onListScrollMoveStart() {
             console.log('started scroll', this)
             this.isMoving = true;
@@ -214,10 +204,6 @@ export default {
 
             return playedCard.value === card.value || playedCard.color === card.color;
         },
-    },
-
-    watch: {
-        handRef: 'onResize'
     }
 }
 </script>

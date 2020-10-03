@@ -1,7 +1,7 @@
 <template>
         <!-- :style="{ transform: moveCardStyle, position: isMoving ? 'fixed' : 'initial' }" -->
       <div class="game-card" :data-app="dataApp">
-        <div :style="style">
+        <div class="card-front" :style="style">
             <vue-global-events target="window" @resize="onResize"></vue-global-events>
         </div>
 
@@ -144,8 +144,13 @@ export default {
 <style>
 .game-card {
     position: relative;
+    transition: opacity 0.35s ease-in-out;
     touch-action: none;
     user-select: none;
+}
+
+.card-front, .card-back {
+    transition: opacity 0.35s ease-in-out;
 }
 
 .card-flipped .game-card {

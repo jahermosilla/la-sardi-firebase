@@ -4,12 +4,22 @@
             <div class="text-center">Jugadores</div>
             <div class="text-center">{{actualPlayers}} / {{maxPlayers}}</div>
         </div>
+
+        <v-alert
+            v-show="gameCode"
+            color="green"
+            text
+            style="font-size: 1.3em !important;"
+        >
+            {{gameCode}}
+        </v-alert>
         
         <v-btn @click="startGame" :disabled="actualPlayers < 2" color="green" text v-if="imOwner" :loading="loading">
             <span class="white--text">EMPEZAR PARTIDA</span>
             <v-spacer></v-spacer>
             <v-icon right>mdi-send</v-icon>
         </v-btn>
+
         <div v-else class="white--text text-center px-2 d-flex flex-column">
             Esperando a que el creador empiece la partida
             <v-icon color="green lighten-2">mdi-dots-horizontal</v-icon>
@@ -51,6 +61,12 @@ export default {
     },
 
     computed: {
+        gameCode() {
+            return this.gameRef
+                ? this.gameRef.token
+                : null;
+        },
+
         imOwner() {
             return this.gameRef
                 ? this.gameRef.owner === firebase.auth().currentUser.uid

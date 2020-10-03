@@ -14,6 +14,7 @@ import checkPlayerAlreadyInGame from '../middlewares/check-player-already-in-gam
 import setRequestData, { RequestData } from "../lib/helpers";
 import { ICard, IGameNode } from "../lib/interfaces/game";
 import { NextFunction, Request, Response, Router } from "express";
+import { GameStatus } from '../lib/enums/game-status';
 
 
 const router = Router();
@@ -21,34 +22,47 @@ const router = Router();
 router.use(authorizationMiddleware);
 
 router
-  .post("/game", setRequestData(RequestData.PLAYERGAME), checkIfPlaying, create)
   .post(
-    "/game/private/join",
+    "/game",
     setRequestData(RequestData.PLAYERGAME),
     checkIfPlaying,
+    create
+  )
+  .post(
+    "/game/private/join",
+    setRequestData(
+      RequestData.PLAYERGAME,
+      RequestData.GAMESTATUS
+    ),
+    checkIfPlaying,
     findGameByToken,
-    setRequestData(RequestData.GAMESTATUS),
-    checkGameStatus,
+    checkGameStatus(GameStatus.NOT_STARTED),
     checkPlayerAlreadyInGame,
     checkMaxPlayersNumber,
     join
   )
   .post(
     "/game/:gameId/join",
-    setRequestData(RequestData.PLAYERGAME),
+    setRequestData(
+      RequestData.PLAYERGAME,
+      RequestData.GAMESTATUS
+    ),
     checkIfPlaying,
-    setRequestData(RequestData.GAMESTATUS),
-    checkGameStatus,
+    checkGameStatus(GameStatus.NOT_STARTED),
     checkPlayerAlreadyInGame,
     checkMaxPlayersNumber,
     join
   )
   .post(
     "/game/:gameId/start",
-    setRequestData(RequestData.GAME),
+    setRequestData(
+      RequestData.GAME,
+      RequestData.DECK,
+      RequestData.GAMESTATUS
+    ),
     checkIfOwner,
     checkPlayersNumber,
-    setRequestData(RequestData.DECK),
+    checkGameStatus(GameStatus.NOT_STARTED),
     start
   );
 

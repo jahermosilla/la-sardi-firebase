@@ -1,9 +1,14 @@
 <template>
-    <v-card max-height="20vh" class="mx-1">
+    <v-card
+        @animationend="playTurnAnimation = false"
+        :class="{ 'user-turn': playTurnAnimation }"
+        class="mx-1"
+        max-height="20vh"
+    >
         <v-card-text class="pa-1 d-flex flex-column align-center">
-        <div class="enemy-name--text font-weight-bold">{{uid}}</div>
-        <v-avatar :size="50" @animationend="playTurnAnimation = false" :class="{ 'user-turn': playTurnAnimation }">
-            <img src="https://api.adorable.io/avatars/285/abott@adorable.png" alt="">
+        <div class="enemy-name--text font-weight-bold">{{name}}</div>
+        <v-avatar :size="50">
+            <img :src="photoURL" alt="">
         </v-avatar>
         </v-card-text>
         <v-card-actions class="grey lighten-4">
@@ -14,6 +19,9 @@
 </template>
 
 <script>
+import firebase from 'firebase/app';
+import 'firebase/database';
+
 export default {
     props: {
         uid: {
@@ -34,11 +42,28 @@ export default {
 
     data() {
         return {
-            playTurnAnimation: false
+            playTurnAnimation: false,
+            userData: null
+        }
+    },
+
+    firebase() {
+        return {
+            userData: firebase.database().ref(`users/${this.uid}`)
         }
     },
 
     computed: {
+        name() {
+            return this.userData ? this.userData.name : this.uid;
+        },
+
+        photoURL() {
+            return this.userData
+                ? this.userData.photoURL
+                : 'https://api.adorable.io/avatars/285/abott@adorable.png';
+        },
+
         badgeColor() {
             return this.turn ? 'green' : 'grey';
         }

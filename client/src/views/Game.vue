@@ -121,7 +121,7 @@ export default {
             document.documentElement.style.setProperty('--animated-card-dx', `${dx}px`);
             document.documentElement.style.setProperty('--animated-card-dy', `${dy}px`);
             
-            this.animatedCard = card;  
+            this.animatedCard = card;
         },
 
         drawCardFromPlayerToTable(card, playerIndex) {

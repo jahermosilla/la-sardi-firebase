@@ -13,7 +13,7 @@ export async function create({
   isPrivate: boolean;
   qtt: IGameQuantities;
 }): Promise<string> {
-  const deck = Deck._createShuffledDeck();
+  const deck = Deck.createShuffledDeck(qtt.decks);
   const game = getEmpty({ owner, isPrivate, qtt });
 
   const key = (await firebase.database().ref("games").push()).key;
@@ -110,20 +110,3 @@ export async function getGameByToken(token: string): Promise<firebase.database.D
     .limitToFirst(1)
     .once("value");
 }
-
-// export async function updateGameState(
-//   gameId: string,
-//   changes: Partial<IGameState>
-// ) {
-//   try {
-//     await firebase
-//       .database()
-//       .ref("games")
-//       .child(gameId)
-//       .child("state")
-//       .update(changes);
-//   } catch (e) {
-//     console.error(e);
-//     // Do nothing
-//   }
-// }

@@ -1,53 +1,69 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
-import { GameStatus } from "../../lib/enums/game-status";
-import { IGameNode } from "../../lib/interfaces/game";
+import { IPlayers } from "../../lib/interfaces/game";
+import { Change } from "firebase-functions";
+import { DataSnapshot } from "firebase-functions/lib/providers/database";
 
 export const onePlayerLeft = functions.database.ref('games/{gameId}/players/').onUpdate(async (snapshot, context) => {
-    let allPlayers = 0;
-    let playersEnd = 0;
-    
-    snapshot.after.forEach(child =>{
-        allPlayers++;
-        const ended = child.val() as boolean;
+    const { total, trues } = getTotals(snapshot);
 
-        if (ended) {
-            playersEnd++;
-        }
-    });
-
-    functions.logger.log(allPlayers, playersEnd, 'END');
-
-    if (allPlayers - playersEnd <= 1) {
+    if (total - trues <= 1) {
         const { gameId } = context.params;
-        const updates: Partial<IGameNode> = {
-            status: GameStatus.FINISHED
-        };
 
-        await admin.database().ref(`games/${gameId}`).update(updates);
+        await removeGameData(gameId);
     }
 });
 
 export const allPlayersPass = functions.database.ref('/games/{gameId}/pass').onUpdate(async (snapshot, context) => {
-    let allPlayers = 0;
-    let playersPass = 0;
+    const { total, trues } = getTotals(snapshot);
 
-    snapshot.after.forEach(child => {
-        playersPass++;
-        const pass = child.val() as boolean;
-        if (pass) {
-            playersPass++;
+    if (total === trues) {
+        // TODO: Game Ended
+        const { gameId } = context.params;
+        await removeGameData(gameId)
+    }
+});
+
+function getTotals(changes: Change<DataSnapshot>) : { total: number, trues: number } {
+    let total = 0;
+    let trues = 0;
+
+    changes.after.forEach(child => {
+        total++;
+
+        if (child.val() as boolean) {
+            trues++;
         }
     });
 
-    if (playersPass === allPlayers) {
-        // TODO: Game Ended
-        const { gameId } = context.params;
-        const updates: Partial<IGameNode> = {
-          status: GameStatus.FINISHED,
-        };
+    return {
+        total,
+        trues
+    };
+}
 
-        await admin.database().ref(`games/${gameId}`).update(updates);
-    }
-});
+async function removeGameData(gameId: string) {
+  /**
+   * To remove:
+   *  - game/{gameId}
+   * - hands/{gameId}
+   * - players/{playerId}/game
+   * - decks/{gameId}
+   */
+  const players: IPlayers = (
+    await admin.database().ref(`games/${gameId}/players`).once('value')
+  ).val();
+
+  const updates = {
+    [`games/${gameId}`]: null,
+    [`hands/${gameId}`]: null,
+    [`decks/${gameId}`]: null
+  }
+
+  for (const playerId of Object.keys(players || {})) {
+    updates[`users/${playerId}/game`] = null;
+  }
+
+  await admin.database().ref().update(updates);
+}

@@ -1,17 +1,16 @@
 <template>
-  <v-dialog width="fit-content" scrollable persistent v-model="value">
+  <v-dialog width="fit-content" scrollable persistent :value="value">
       <v-card>
           <v-card-title>
               Cambiar palo
           </v-card-title>
           <v-card-text
-            style="max-height: 50vh; overflow-x: scroll;"
-            class="d-flex align-center px-4 py-2"
+            class="change-color-container px-4 py-2"
           >
               <game-card
-                class="change-color-card d-inline-block mx-1"
+                class="change-color-card mx-1"
                 @click.native="color = card.color"
-                :disabled="card.color === color"
+                :disabled="card.color !== color"
                 v-for="card in cards"
                 v-bind="card"
                 :key="card.color" />
@@ -67,12 +66,29 @@ export default {
 </script>
 
 <style>
-.change-color-card {
-    opacity: 0.5;
-    transition: opacity 0.35s ease-in-out;
+.change-color-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 1em;
 }
 
-.change-color-card.selected {
-    opacity: 1;
+.change-color-card:nth-child(1) {
+    grid-row: 1;
+    grid-column: 1;
+}
+
+.change-color-card:nth-child(2) {
+    grid-row: 1;
+    grid-column: 2;
+}
+
+.change-color-card:nth-child(3) {
+    grid-row: 2;
+    grid-column: 1;
+}
+
+.change-color-card:nth-child(4) {
+    grid-row: 2;
+    grid-column: 2;
 }
 </style>

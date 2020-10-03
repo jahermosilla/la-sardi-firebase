@@ -48,7 +48,7 @@ export function getEmpty({
     },
 
     players: {
-      [owner]: true
+      [owner]: false
     },
   };
 }
