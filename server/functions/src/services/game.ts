@@ -74,7 +74,7 @@ export async function join(playerId: string, gameId: string) {
   const userKey = `users/${playerId}/game`;
 
   const changes = {
-    [gameKey]: true,
+    [gameKey]: false,
     [userKey]: gameId
   };
 

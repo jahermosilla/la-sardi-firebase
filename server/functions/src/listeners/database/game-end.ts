@@ -2,7 +2,6 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
 import { IPlayers } from "../../lib/interfaces/game";
-import { Change } from "firebase-functions";
 import { DataSnapshot } from "firebase-functions/lib/providers/database";
 
 export const onePlayerLeft = functions.database.ref('games/{gameId}/players/').onUpdate(async (snapshot, context) => {
@@ -25,7 +24,7 @@ export const allPlayersPass = functions.database.ref('/games/{gameId}/pass').onU
     }
 });
 
-function getTotals(changes: Change<DataSnapshot>) : { total: number, trues: number } {
+function getTotals(changes: functions.Change<DataSnapshot>) : { total: number, trues: number } {
     let total = 0;
     let trues = 0;
 

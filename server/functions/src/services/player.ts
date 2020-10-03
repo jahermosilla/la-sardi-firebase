@@ -126,7 +126,7 @@ export async function takeFromDeck({
 export function getNextPlayer(game: IGameNode, turns = 1) : string {
     const direction = game.state.direction;
     const actualTurn = game.state.turn;
-    const players = Object.keys(game.players).filter(playerId => !!game.players[playerId]);
+    const players = Object.keys(game.players).filter(playerId => !game.players[playerId]);
     const index = players.findIndex(playerId => playerId === actualTurn);
     const sign = Math.sign(direction === GameDirection.Clockwise ? 1 : -1);
     let actualIndex = index + (turns * sign);

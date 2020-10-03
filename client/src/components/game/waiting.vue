@@ -68,6 +68,7 @@ export default {
         },
 
         imOwner() {
+            console.log(this.gameRef, firebase.auth().currentUser.uid)
             return this.gameRef
                 ? this.gameRef.owner === firebase.auth().currentUser.uid
                 : false;

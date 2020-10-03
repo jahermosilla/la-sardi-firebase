@@ -3,7 +3,7 @@
     "games": {
       ".indexOn": ["token"],
       "$gameId": {
-        ".read": "data.child('players').child(auth.uid).val() === true"
+        ".read": "data.child('players').hasChild(auth.uid)"
       }
     },
     "hands": {

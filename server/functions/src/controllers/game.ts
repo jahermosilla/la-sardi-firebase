@@ -30,12 +30,12 @@ router
   )
   .post(
     "/game/private/join",
+    findGameByToken,
     setRequestData(
       RequestData.PLAYERGAME,
       RequestData.GAMESTATUS
     ),
     checkIfPlaying,
-    findGameByToken,
     checkGameStatus(GameStatus.NOT_STARTED),
     checkPlayerAlreadyInGame,
     checkMaxPlayersNumber,
